@@ -11,6 +11,7 @@ use Encode;
 use Data::Dumper;
 use HTTP::Request::Common;
 use Scalar::Util qw(blessed);
+use LWP::UserAgent;
 use URI::Escape;
 use RDF::Trine qw(statement iri literal blank);
 use RDF::Trine::Error qw(:try);
@@ -1059,25 +1060,38 @@ sub test_update_dataset_default_graph {
 	my ($ua, $qurl, $uurl, $opt, $res, $name)	= @_;
 	{
 		my $sparql	= <<"END";
+PREFIX dc: <http://purl.org/dc/terms/>
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
 CLEAR ALL ;
 INSERT DATA { GRAPH <http://kasei.us/2009/09/sparql/data/data1.rdf> { <http://kasei.us/2009/09/sparql/data/data1.rdf> a foaf:Document } } ;
-INSERT { GRAPH <http://kasei.us/2009/09/sparql/data/data2.rdf> { ?s ?p ?o } }
-USING <http://kasei.us/2009/09/sparql/data/data1.rdf>
-WHERE { ?s ?p ?o }
+INSERT {
+	GRAPH <http://example.org/protocol-update-dataset-test/> {
+		?s a dc:BibliographicResource
+	}
+}
+WHERE {
+	?s a foaf:Document
+}
 END
-		my $req		= POST($uurl, [
+		my $req		= POST("${uurl}?using-graph-uri=http%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata1.rdf", [
 						'update' => $sparql,
-						'default-graph-uri' => 'http://kasei.us/2009/09/sparql/data/data1.rdf'
 					]);
 		return unless (my $resp = _positive_test_request($ua, $res, $name, $req));
 	}
 	
 	{
-		my $req		= GET("${qurl}?query=" . uri_escape('ASK { GRAPH <http://kasei.us/2009/09/sparql/data/data2.rdf> { ?s ?p ?o } }'));
+		my $sparql	= <<"END";
+ASK {
+	GRAPH <http://example.org/protocol-update-dataset-test/> {
+		<http://kasei.us/2009/09/sparql/data/data1.rdf> a <http://purl.org/dc/terms/BibliographicResource>
+	}
+}
+END
+		my $req		= POST($qurl, [], 'Content-Type' => 'application/sparql-query', 'Accept' => 'application/sparql-results+xml', Content => $sparql);
 		if (my $resp = _positive_test_request($ua, $res, $name, $req)) {
+			my $xmlres	= $resp->decoded_content;
 			my $type	= $resp->header('Content-Type');
-			if ($type eq 'application/sparql-results+xml' or $type eq 'application/sparql-results+json') {
+			if ($type eq 'application/sparql-results+xml') {
 				_test_boolean_result_for_true( $req, $resp, $res, $name );
 			} else {
 				add_result( $res, $name, FAIL, "Expected SPARQL XML or JSON results, but got: " . $type, [$req, $resp] );
@@ -1086,5 +1100,55 @@ END
 	}
 }
 
+sub test_update_dataset_default_graphs {
+	my ($ua, $qurl, $uurl, $opt, $res, $name)	= @_;
+	{
+		my $sparql	= <<"END";
+PREFIX dc: <http://purl.org/dc/terms/>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+CLEAR ALL ;
+INSERT DATA { GRAPH <http://kasei.us/2009/09/sparql/data/data1.rdf> { <http://kasei.us/2009/09/sparql/data/data1.rdf> a foaf:Document } } ;
+INSERT {
+	GRAPH <http://example.org/protocol-update-dataset-test/> {
+		?s a dc:BibliographicResource
+	}
+}
+WHERE {
+	?s a foaf:Document
+}
+END
+		my $req		= POST("${uurl}?using-graph-uri=http%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata1.rdf", [
+						'update' => $sparql,
+					]);
+		return unless (my $resp = _positive_test_request($ua, $res, $name, $req));
+	}
+	
+	{
+		my $sparql	= <<"END";
+ASK {
+	GRAPH <http://example.org/protocol-update-dataset-test/> {
+		<http://kasei.us/2009/09/sparql/data/data1.rdf> a <http://purl.org/dc/terms/BibliographicResource> .
+		<http://kasei.us/2009/09/sparql/data/data2.rdf> a <http://purl.org/dc/terms/BibliographicResource> .
+	}
+}
+END
+		my $req		= POST($qurl, [], 'Content-Type' => 'application/sparql-query', 'Accept' => 'application/sparql-results+xml', Content => $sparql);
+		if (my $resp = _positive_test_request($ua, $res, $name, $req)) {
+			my $xmlres	= $resp->decoded_content;
+			my $type	= $resp->header('Content-Type');
+			if ($type eq 'application/sparql-results+xml') {
+				_test_boolean_result_for_true( $req, $resp, $res, $name );
+			} else {
+				add_result( $res, $name, FAIL, "Expected SPARQL XML or JSON results, but got: " . $type, [$req, $resp] );
+			}
+		}
+	}
+}
 
 __END__
+
+
+	my $sparql	= "SELECT * WHERE { GRAPH ?g { ?s ?p ?o } }";
+	my $req		= POST($qurl, [], 'Content-Type' => 'application/sparql-query', 'Accept' => 'application/sparql-results+xml', Content => $sparql);
+	my $resp = _positive_test_request($ua, $res, $name, $req);
+	warn $resp->decoded_content;

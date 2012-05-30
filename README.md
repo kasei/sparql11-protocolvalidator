@@ -1,35 +1,67 @@
 Proposed SPARQL 1.1 Protocol Tests
 ==================================
 
+This repository contains code which attempts to validate implementations of the
+[SPARQL 1.1 Protocol](http://www.w3.org/TR/sparql11-protocol/). It is a work in
+progress, and subject to change as the Protocol spec continues towards becoming
+a W3C recommendation, and as we
+(the [SPARQL Working Group](http://www.w3.org/2009/sparql/)) continue to
+evaluate existing existing implementations.
+
+The validator is implemented as a perl CGI, and depends on packages available
+from [CPAN](https://metacpan.org/):
+
+* [JSON](https://metacpan.org/release/JSON)
+* [LWP::UserAgent](https://metacpan.org/release/libwww-perl)
+* [RDF::Trine](https://metacpan.org/release/RDF-Trine)
+* [URI::Escape](https://metacpan.org/release/URI)
+
 Setup
 -----
 
-### config
+### Configuration
 
-* query endpoint URL
-* update endpoint URL
+When accessed without any query parameters, the CGI provides an HTML form that
+may be used to validate a Protocol implementation. The parameters are:
+
+* "query_url" -- query endpoint URL
+* "update_url" -- update endpoint URL
+* "software" -- The Protocol implementation IRI that will be used if [conneg](http://www.w3.org/Protocols/rfc2616/rfc2616-sec12.html) is used and requests RDF
+
+The following parameters *should* also be accounted for (in a future version):
+
 * does the default graph change based on other graphs (e.g. acts as the union of named graphs)?
-* do endpoints allow client-specified datasets? if so, assume these graphs are available:
-	* http://@@.example.org/data1.rdf
-	* http://@@.example.org/data2.rdf
-	* http://@@.example.org/data3.rdf
 
-### requirements
+### Requirements
 
-assume support for all of 1.0 query and 1.1 query/update support for:
+It is assumed that the Protocol implementation provides support for all of SPARQL (1.0)
+ and also SPARQL 1.1 Query/Update support for:
 
-* select expressions
+* Select expressions
 * CLEAR ALL
 * CLEAR DEFAULT
 * CLEAR NAMED
 
-assume endpoints can produce application/rdf+xml and application/sparql-results+xml when requested.
+The graph store available to query and update dataset operations must contain 
+the triples available at the following URLs (in respective named graphs):
+
+* http://@@.example.org/data0.rdf
+* http://@@.example.org/data1.rdf
+* http://@@.example.org/data2.rdf
+* http://@@.example.org/data3.rdf
+
+Finally, it is assumed that implementations can produce application/rdf+xml and
+application/sparql-results+xml when requested using [conneg](http://www.w3.org/Protocols/rfc2616/rfc2616-sec12.html).
 
 
 Tests
 -----
 
-### negative tests
+The following tests are implemented (or are planned for implementation):
+
+### Negative tests
+
+Negative tests are expected to fail with either 4xx or 5xx response codes.
 
 * bad-query-method - invoke query operation with a method other than GET or POST
 
@@ -156,10 +188,10 @@ Tests
 		using-named-graph-uri=http%3A%2F%2Fexample%2Fpeople&update=%09%09PREFIX%20foaf%3A%20%20%3Chttp%3A%2F%2Fxmlns.com%2Ffoaf%2F0.1%2F%3E%0A%09%09WITH%20%3Chttp%3A%2F%2Fexample%2Faddresses%3E%0A%09%09DELETE%20%7B%20%3Fperson%20foaf%3AgivenName%20%27Bill%27%20%7D%0A%09%09INSERT%20%7B%20%3Fperson%20foaf%3AgivenName%20%27William%27%20%7D%0A%09%09WHERE%20%7B%0A%09%09%09%3Fperson%20foaf%3AgivenName%20%27Bill%27%0A%09%09%7D%0A
 
 
-### positive tests
+### Positive tests
 
-(test for 2XX or 3XX responses)
-
+Positive tests are expected to succeed with either 2xx or 3xx response codes.
+Some of the following tests also test the response content for expected results.
 
 * query-get - query via GET
 
@@ -277,11 +309,70 @@ Tests
 
 * update-dataset-default-graph - update with protocol-specified default graph
 
-		@@ fill in details
+		POST /sparql?using-graph-uri=http%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata1.rdf HTTP/1.1
+		Host: www.example
+		User-agent: sparql-client/0.1
+		Content-Type: application/sparql-update
+		Content-Length: XXX
+		
+		PREFIX dc: <http://purl.org/dc/terms/>
+		PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+		CLEAR ALL ;
+		INSERT DATA { GRAPH <http://kasei.us/2009/09/sparql/data/data1.rdf> { <http://kasei.us/2009/09/sparql/data/data1.rdf> a foaf:Document } } ;
+		INSERT {
+			GRAPH <http://example.org/protocol-update-dataset-test/> {
+				?s a dc:BibliographicResource
+			}
+		}
+		WHERE {
+			?s a foaf:Document
+		}
+
+		POST /sparql HTTP/1.1
+		Host: www.example
+		User-agent: sparql-client/0.1
+		Content-Type: application/sparql-query
+		Content-Length: XXX
+		
+		ASK {
+			GRAPH <http://example.org/protocol-update-dataset-test/> {
+				<http://kasei.us/2009/09/sparql/data/data1.rdf> a <http://purl.org/dc/terms/BibliographicResource>
+			}
+		}
 
 * update-dataset-default-graphs - update with protocol-specified default graphs
 
-		@@ fill in details
+		POST /sparql?using-graph-uri=http%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata1.rdf&using-graph-uri=http%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata2.rdf HTTP/1.1
+		Host: www.example
+		User-agent: sparql-client/0.1
+		Content-Type: application/sparql-update
+		Content-Length: XXX
+		
+		PREFIX dc: <http://purl.org/dc/terms/>
+		PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+		CLEAR ALL ;
+		INSERT DATA { GRAPH <http://kasei.us/2009/09/sparql/data/data1.rdf> { <http://kasei.us/2009/09/sparql/data/data1.rdf> a foaf:Document } } ;
+		INSERT {
+			GRAPH <http://example.org/protocol-update-dataset-graphs-test/> {
+				?s a dc:BibliographicResource
+			}
+		}
+		WHERE {
+			?s a foaf:Document
+		}
+
+		POST /sparql HTTP/1.1
+		Host: www.example
+		User-agent: sparql-client/0.1
+		Content-Type: application/sparql-query
+		Content-Length: XXX
+		
+		ASK {
+			GRAPH <http://example.org/protocol-update-dataset-test/> {
+				<http://kasei.us/2009/09/sparql/data/data1.rdf> a <http://purl.org/dc/terms/BibliographicResource> .
+				<http://kasei.us/2009/09/sparql/data/data2.rdf> a <http://purl.org/dc/terms/BibliographicResource> .
+			}
+		}
 
 * update-dataset-named-graphs - update with protocol-specified named graphs
 
