@@ -328,6 +328,7 @@ Some of the following tests also test the response content for expected results.
 			?s a foaf:Document
 		}
 
+
 		POST /sparql HTTP/1.1
 		Host: www.example
 		User-agent: sparql-client/0.1
@@ -360,6 +361,7 @@ Some of the following tests also test the response content for expected results.
 		WHERE {
 			?s a foaf:Document
 		}
+
 
 		POST /sparql HTTP/1.1
 		Host: www.example
@@ -413,6 +415,7 @@ Some of the following tests also test the response content for expected results.
 		Content-Length: XXX
 		
 		CLEAR GRAPH <http://example.org/protocol-base-test/> ; INSERT DATA { GRAPH <http://example.org/protocol-base-test/> { <http://example.org/s> <http://example.org/p> <test> } }
+
 
 		POST /sparql/ HTTP/1.1
 		Host: www.example
