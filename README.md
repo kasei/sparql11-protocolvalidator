@@ -328,6 +328,7 @@ Some of the following tests also test the response content for expected results.
 			?s a foaf:Document
 		}
 
+followed by
 
 		POST /sparql HTTP/1.1
 		Host: www.example
@@ -362,6 +363,7 @@ Some of the following tests also test the response content for expected results.
 			?s a foaf:Document
 		}
 
+followed by
 
 		POST /sparql HTTP/1.1
 		Host: www.example
@@ -416,6 +418,7 @@ Some of the following tests also test the response content for expected results.
 		
 		CLEAR GRAPH <http://example.org/protocol-base-test/> ; INSERT DATA { GRAPH <http://example.org/protocol-base-test/> { <http://example.org/s> <http://example.org/p> <test> } }
 
+followed by
 
 		POST /sparql/ HTTP/1.1
 		Host: www.example
