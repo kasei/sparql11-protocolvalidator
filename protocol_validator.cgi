@@ -495,7 +495,7 @@ END
 		}
 		
 		my $type	= test_type($test);
-		my $desc	= DESCRIPTION->{ $test };
+		my $desc	= "$test: " . DESCRIPTION->{ $test };
 		no warnings 'uninitialized';
 		my $status;
 		if ($res->{$type}{$test}{result} eq PASS) {
@@ -522,6 +522,7 @@ END
 				for ($reqs, $resps) {
 					s/</&lt;/g;
 					s/"/&quot;/g;
+					s{\n}{<br/>\n}g;
 				}
 			}
 			print <<"END";
@@ -1020,15 +1021,27 @@ sub test_query_content_type_construct {
 	}
 }
 
-# update-dataset-default-graph
-# update-dataset-default-graphs
-# update-dataset-named-graphs
-# update-dataset-full
-# update-post-form
-# update-post-direct
+sub test_update_post_form {
+	my ($ua, $qurl, $uurl, $opt, $res, $name)	= @_;
+	my $req		= POST($uurl, [
+					'update' => 'CLEAR ALL',
+				]);
+	my $resp	= $ua->request( $req );
+	if (my $resp = _positive_test_request($ua, $res, $name, $req)) {
+		add_result( $res, $name, PASS );
+	}
+}
+
+sub test_update_post_direct {
+	my ($ua, $qurl, $uurl, $opt, $res, $name)	= @_;
+	my $req		= POST($uurl, [], 'Content-Type' => 'application/sparql-update', Content => 'CLEAR ALL');
+	my $resp	= $ua->request( $req );
+	if (my $resp = _positive_test_request($ua, $res, $name, $req)) {
+		add_result( $res, $name, PASS );
+	}
+}
 
 sub test_update_base_uri {
-	die;
 	my ($ua, $qurl, $uurl, $opt, $res, $name)	= @_;
 	{
 		my $resp	= $ua->request( POST($uurl, [
@@ -1063,7 +1076,11 @@ sub test_update_dataset_default_graph {
 PREFIX dc: <http://purl.org/dc/terms/>
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
 CLEAR ALL ;
-INSERT DATA { GRAPH <http://kasei.us/2009/09/sparql/data/data1.rdf> { <http://kasei.us/2009/09/sparql/data/data1.rdf> a foaf:Document } } ;
+INSERT DATA {
+	GRAPH <http://kasei.us/2009/09/sparql/data/data1.rdf> {
+		<http://kasei.us/2009/09/sparql/data/data1.rdf> a foaf:Document
+	}
+} ;
 INSERT {
 	GRAPH <http://example.org/protocol-update-dataset-test/> {
 		?s a dc:BibliographicResource
@@ -1077,6 +1094,14 @@ END
 						'update' => $sparql,
 					]);
 		return unless (my $resp = _positive_test_request($ua, $res, $name, $req));
+	}
+	
+	if (0) {
+		my $sparql      = "SELECT * WHERE { GRAPH ?g { ?s ?p ?o } }";
+		my $req         = POST($qurl, [], 'Content-Type' => 'application/sparql-query', 'Accept' => 'application/sparql-results+xml', Content => $sparql);
+		my $resp = _positive_test_request($ua, $res, $name, $req);
+		warn $resp->decoded_content;
+		die;
 	}
 	
 	{
@@ -1107,9 +1132,13 @@ sub test_update_dataset_default_graphs {
 PREFIX dc: <http://purl.org/dc/terms/>
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
 CLEAR ALL ;
-INSERT DATA { GRAPH <http://kasei.us/2009/09/sparql/data/data1.rdf> { <http://kasei.us/2009/09/sparql/data/data1.rdf> a foaf:Document } } ;
+INSERT DATA {
+	GRAPH <http://kasei.us/2009/09/sparql/data/data1.rdf> { <http://kasei.us/2009/09/sparql/data/data1.rdf> a foaf:Document }
+	GRAPH <http://kasei.us/2009/09/sparql/data/data2.rdf> { <http://kasei.us/2009/09/sparql/data/data2.rdf> a foaf:Document }
+	GRAPH <http://kasei.us/2009/09/sparql/data/data3.rdf> { <http://kasei.us/2009/09/sparql/data/data3.rdf> a foaf:Document }
+} ;
 INSERT {
-	GRAPH <http://example.org/protocol-update-dataset-test/> {
+	GRAPH <http://example.org/protocol-update-dataset-graphs-test/> {
 		?s a dc:BibliographicResource
 	}
 }
@@ -1117,7 +1146,7 @@ WHERE {
 	?s a foaf:Document
 }
 END
-		my $req		= POST("${uurl}?using-graph-uri=http%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata1.rdf", [
+		my $req		= POST("${uurl}?using-graph-uri=http%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata1.rdf&using-graph-uri=http%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata2.rdf", [
 						'update' => $sparql,
 					]);
 		return unless (my $resp = _positive_test_request($ua, $res, $name, $req));
@@ -1129,6 +1158,129 @@ ASK {
 	GRAPH <http://example.org/protocol-update-dataset-test/> {
 		<http://kasei.us/2009/09/sparql/data/data1.rdf> a <http://purl.org/dc/terms/BibliographicResource> .
 		<http://kasei.us/2009/09/sparql/data/data2.rdf> a <http://purl.org/dc/terms/BibliographicResource> .
+	}
+	FILTER NOT EXISTS {
+		GRAPH <http://example.org/protocol-update-dataset-test/> {
+			<http://kasei.us/2009/09/sparql/data/data3.rdf> a <http://purl.org/dc/terms/BibliographicResource> .
+		}
+	}
+}
+END
+		my $req		= POST($qurl, [], 'Content-Type' => 'application/sparql-query', 'Accept' => 'application/sparql-results+xml', Content => $sparql);
+		if (my $resp = _positive_test_request($ua, $res, $name, $req)) {
+			my $xmlres	= $resp->decoded_content;
+			my $type	= $resp->header('Content-Type');
+			if ($type eq 'application/sparql-results+xml') {
+				_test_boolean_result_for_true( $req, $resp, $res, $name );
+			} else {
+				add_result( $res, $name, FAIL, "Expected SPARQL XML or JSON results, but got: " . $type, [$req, $resp] );
+			}
+		}
+	}
+}
+
+sub test_update_dataset_named_graphs {
+	my ($ua, $qurl, $uurl, $opt, $res, $name)	= @_;
+	{
+		my $sparql	= <<"END";
+PREFIX dc: <http://purl.org/dc/terms/>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+CLEAR ALL ;
+INSERT DATA {
+	GRAPH <http://kasei.us/2009/09/sparql/data/data1.rdf> { <http://kasei.us/2009/09/sparql/data/data1.rdf> a foaf:Document }
+	GRAPH <http://kasei.us/2009/09/sparql/data/data2.rdf> { <http://kasei.us/2009/09/sparql/data/data2.rdf> a foaf:Document }
+	GRAPH <http://kasei.us/2009/09/sparql/data/data3.rdf> { <http://kasei.us/2009/09/sparql/data/data3.rdf> a foaf:Document }
+} ;
+INSERT {
+	GRAPH <http://example.org/protocol-update-dataset-graphs-test/> {
+		?s a dc:BibliographicResource
+	}
+}
+WHERE {
+	GRAPH ?g {
+		?s a foaf:Document
+	}
+}
+END
+		my $req		= POST("${uurl}?using-named-graph-uri=http%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata1.rdf&using-named-graph-uri=http%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata2.rdf", [
+						'update' => $sparql,
+					]);
+		return unless (my $resp = _positive_test_request($ua, $res, $name, $req));
+	}
+	
+	{
+		my $sparql	= <<"END";
+ASK {
+	GRAPH <http://example.org/protocol-update-dataset-test/> {
+		<http://kasei.us/2009/09/sparql/data/data1.rdf> a <http://purl.org/dc/terms/BibliographicResource> .
+		<http://kasei.us/2009/09/sparql/data/data2.rdf> a <http://purl.org/dc/terms/BibliographicResource> .
+	}
+	FILTER NOT EXISTS {
+		GRAPH <http://example.org/protocol-update-dataset-test/> {
+			<http://kasei.us/2009/09/sparql/data/data3.rdf> a <http://purl.org/dc/terms/BibliographicResource> .
+		}
+	}
+}
+END
+		my $req		= POST($qurl, [], 'Content-Type' => 'application/sparql-query', 'Accept' => 'application/sparql-results+xml', Content => $sparql);
+		if (my $resp = _positive_test_request($ua, $res, $name, $req)) {
+			my $xmlres	= $resp->decoded_content;
+			my $type	= $resp->header('Content-Type');
+			if ($type eq 'application/sparql-results+xml') {
+				_test_boolean_result_for_true( $req, $resp, $res, $name );
+			} else {
+				add_result( $res, $name, FAIL, "Expected SPARQL XML or JSON results, but got: " . $type, [$req, $resp] );
+			}
+		}
+	}
+}
+
+sub test_update_dataset_full {
+	my ($ua, $qurl, $uurl, $opt, $res, $name)	= @_;
+	{
+		my $sparql	= <<"END";
+PREFIX dc: <http://purl.org/dc/terms/>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+CLEAR ALL ;
+INSERT DATA {
+	GRAPH <http://kasei.us/2009/09/sparql/data/data1.rdf> { <http://kasei.us/2009/09/sparql/data/data1.rdf> a foaf:Document }
+	GRAPH <http://kasei.us/2009/09/sparql/data/data2.rdf> { <http://kasei.us/2009/09/sparql/data/data2.rdf> a foaf:Document }
+	GRAPH <http://kasei.us/2009/09/sparql/data/data3.rdf> { <http://kasei.us/2009/09/sparql/data/data3.rdf> a foaf:Document }
+} ;
+INSERT {
+	GRAPH <http://example.org/protocol-update-dataset-graphs-test/> {
+		?s <http://example.org/in> ?in
+	}
+}
+WHERE {
+	{
+		GRAPH ?g { ?s a foaf:Document }
+		BIND(?g AS ?in)
+	}
+	UNION
+	{
+		?s a foaf:Document .
+		BIND("default" AS ?in)
+	}
+}
+END
+		my $req		= POST("${uurl}?using-graph-uri=http%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata1.rdf&using-named-graph-uri=http%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata2.rdf", [
+						'update' => $sparql,
+					]);
+		return unless (my $resp = _positive_test_request($ua, $res, $name, $req));
+	}
+	
+	{
+		my $sparql	= <<"END";
+ASK {
+	GRAPH <http://example.org/protocol-update-dataset-test/> {
+		<http://kasei.us/2009/09/sparql/data/data1.rdf> <http://example.org/in> "default" .
+		<http://kasei.us/2009/09/sparql/data/data2.rdf> <http://example.org/in> <http://kasei.us/2009/09/sparql/data/data2.rdf> .
+	}
+	FILTER NOT EXISTS {
+		GRAPH <http://example.org/protocol-update-dataset-test/> {
+			<http://kasei.us/2009/09/sparql/data/data3.rdf> ?p ?o
+		}
 	}
 }
 END
@@ -1146,9 +1298,3 @@ END
 }
 
 __END__
-
-
-	my $sparql	= "SELECT * WHERE { GRAPH ?g { ?s ?p ?o } }";
-	my $req		= POST($qurl, [], 'Content-Type' => 'application/sparql-query', 'Accept' => 'application/sparql-results+xml', Content => $sparql);
-	my $resp = _positive_test_request($ua, $res, $name, $req);
-	warn $resp->decoded_content;
