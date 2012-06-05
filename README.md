@@ -45,10 +45,10 @@ It is assumed that the Protocol implementation provides support for all of SPARQ
 The graph store available to query and update dataset operations must contain 
 the triples available at the following URLs (in respective named graphs):
 
-* http://@@.example.org/data0.rdf
-* http://@@.example.org/data1.rdf
-* http://@@.example.org/data2.rdf
-* http://@@.example.org/data3.rdf
+* http://kasei.us/2009/09/sparql/data/data0.rdf
+* http://kasei.us/2009/09/sparql/data/data1.rdf
+* http://kasei.us/2009/09/sparql/data/data2.rdf
+* http://kasei.us/2009/09/sparql/data/data3.rdf
 
 Finally, it is assumed that implementations can produce application/rdf+xml and
 application/sparql-results+xml when requested using [conneg](http://www.w3.org/Protocols/rfc2616/rfc2616-sec12.html).
@@ -61,17 +61,27 @@ The following tests are implemented (or are planned for implementation):
 
 ### Negative tests
 
-Negative tests are expected to fail with either 4xx or 5xx response codes.
+Negative tests are expected to fail with a 4xx response code as they represent invalid requests.
 
-* bad-query-method - invoke query operation with a method other than GET or POST
+***
+
+*bad-query-method* - invoke query operation with a method other than GET or POST
 
 		PUT /sparql?query=ASK%20%7B%7D
 
-* bad-multiple-queries - invoke query operation with more than one query string
+* Expect 4xx response.
+
+***
+
+*bad-multiple-queries* - invoke query operation with more than one query string
 
 		GET /sparql?query=ASK%20%7B%7D&query=SELECT%20%2A%20%7B%7D
 
-* bad-query-wrong-media-type - invoke query operation with a POST with media type that's not url-encoded or application/sparql-query
+* Expect 4xx response.
+
+***
+
+*bad-query-wrong-media-type* - invoke query operation with a POST with media type that's not url-encoded or application/sparql-query
 
 		POST /sparql/ HTTP/1.1
 		Host: www.example
@@ -81,7 +91,11 @@ Negative tests are expected to fail with either 4xx or 5xx response codes.
 		
 		ASK {}
 
-* bad-query-missing-form-type - invoke query operation with url-encoded body, but without application/x-www-url-form-urlencoded media type
+* Expect 4xx response.
+
+***
+
+*bad-query-missing-form-type* - invoke query operation with url-encoded body, but without application/x-www-url-form-urlencoded media type
 
 		POST /sparql/ HTTP/1.1
 		Host: www.example
@@ -90,7 +104,11 @@ Negative tests are expected to fail with either 4xx or 5xx response codes.
 		
 		query=ASK%20%7B%7D
 
-* bad-query-missing-direct-type - invoke query operation with SPARQL body, but without application/sparql-query media type
+* Expect 4xx response.
+
+***
+
+*bad-query-missing-direct-type* - invoke query operation with SPARQL body, but without application/sparql-query media type
 
 		POST /sparql/ HTTP/1.1
 		Host: www.example
@@ -99,7 +117,11 @@ Negative tests are expected to fail with either 4xx or 5xx response codes.
 		
 		ASK {}
 
-* bad-query-non-utf8 - invoke query operation with direct POST, but with a non-UTF8 encoding (UTF-16)
+* Expect 4xx response.
+
+***
+
+*bad-query-non-utf8* - invoke query operation with direct POST, but with a non-UTF8 encoding (UTF-16)
 
 		### (content body encoded in utf-16)
 		POST /sparql/ HTTP/1.1
@@ -110,15 +132,27 @@ Negative tests are expected to fail with either 4xx or 5xx response codes.
 		
 		ASK {}
 
-* bad-query-syntax - invoke query operation with invalid query syntax (4XX result)
+* Expect 4xx response.
+
+***
+
+*bad-query-syntax* - invoke query operation with invalid query syntax (4XX result)
 
 		GET /sparql?query=ASK%20%7B
 
-* bad-update-get - invoke update operation with GET
+* Expect 4xx response.
+
+***
+
+*bad-update-get* - invoke update operation with GET
 
 		GET /sparql?update=CLEAR%20ALL
 
-* bad-multiple-updates - invoke update operation with more than one update string
+* Expect 4xx response.
+
+***
+
+*bad-multiple-updates* - invoke update operation with more than one update string
 
 		POST /sparql/ HTTP/1.1
 		Host: www.example
@@ -128,7 +162,11 @@ Negative tests are expected to fail with either 4xx or 5xx response codes.
 		
 		update=CLEAR%20NAMED&update=CLEAR%20DEFAULT
 
-* bad-update-wrong-media-type - invoke update operation with a POST with media type that's not url-encoded or application/sparql-update
+* Expect 4xx response.
+
+***
+
+*bad-update-wrong-media-type* - invoke update operation with a POST with media type that's not url-encoded or application/sparql-update
 
 		POST /sparql/ HTTP/1.1
 		Host: www.example
@@ -138,7 +176,11 @@ Negative tests are expected to fail with either 4xx or 5xx response codes.
 		
 		CLEAR NAMED
 
-* bad-update-missing-form-type - invoke update operation with url-encoded body, but without application/x-www-url-form-urlencoded media type
+* Expect 4xx response.
+
+***
+
+*bad-update-missing-form-type* - invoke update operation with url-encoded body, but without application/x-www-url-form-urlencoded media type
 
 		POST /sparql/ HTTP/1.1
 		Host: www.example
@@ -147,7 +189,11 @@ Negative tests are expected to fail with either 4xx or 5xx response codes.
 		
 		update=CLEAR%20NAMED
 
-* bad-update-missing-direct-type - invoke update operation with SPARQL body, but without application/sparql-update media type
+* Expect 4xx response.
+
+***
+
+*bad-update-missing-direct-type* - invoke update operation with SPARQL body, but without application/sparql-update media type
 
 		POST /sparql/ HTTP/1.1
 		Host: www.example
@@ -156,7 +202,11 @@ Negative tests are expected to fail with either 4xx or 5xx response codes.
 		
 		CLEAR NAMED
 
-* bad-update-non-utf8 - invoke update operation with direct POST, but with a non-UTF8 encoding
+* Expect 4xx response.
+
+***
+
+*bad-update-non-utf8* - invoke update operation with direct POST, but with a non-UTF8 encoding
 
 		### (content body encoded in utf-16)
 		POST /sparql/ HTTP/1.1
@@ -167,7 +217,11 @@ Negative tests are expected to fail with either 4xx or 5xx response codes.
 		
 		CLEAR NAMED
 
-* bad-update-syntax - invoke update operation with invalid update syntax (4XX result)
+* Expect 4xx response.
+
+***
+
+*bad-update-syntax* - invoke update operation with invalid update syntax (4XX result)
 
 		POST /sparql/ HTTP/1.1
 		Host: www.example
@@ -177,7 +231,11 @@ Negative tests are expected to fail with either 4xx or 5xx response codes.
 		
 		update=CLEAR%20XYZ
 
-* bad-update-dataset-conflict - invoke update with both using-graph-uri/using-named-graph-uri parameter and USING/WITH clause
+* Expect 4xx response.
+
+***
+
+*bad-update-dataset-conflict* - invoke update with both using-graph-uri/using-named-graph-uri parameter and USING/WITH clause
 
 		POST /sparql/ HTTP/1.1
 		Host: www.example
@@ -187,17 +245,27 @@ Negative tests are expected to fail with either 4xx or 5xx response codes.
 		
 		using-named-graph-uri=http%3A%2F%2Fexample%2Fpeople&update=%09%09PREFIX%20foaf%3A%20%20%3Chttp%3A%2F%2Fxmlns.com%2Ffoaf%2F0.1%2F%3E%0A%09%09WITH%20%3Chttp%3A%2F%2Fexample%2Faddresses%3E%0A%09%09DELETE%20%7B%20%3Fperson%20foaf%3AgivenName%20%27Bill%27%20%7D%0A%09%09INSERT%20%7B%20%3Fperson%20foaf%3AgivenName%20%27William%27%20%7D%0A%09%09WHERE%20%7B%0A%09%09%09%3Fperson%20foaf%3AgivenName%20%27Bill%27%0A%09%09%7D%0A
 
+* Expect 4xx response.
+
 
 ### Positive tests
 
 Positive tests are expected to succeed with either 2xx or 3xx response codes.
 Some of the following tests also test the response content for expected results.
 
-* query-get - query via GET
+***
+
+*query-get* - query via GET
 
 		GET /sparql?query=ASK%20%7B%7D
 
-* query-post-form - query via URL-encoded POST
+* Expect 2xx or 3xx response.
+* Expect Content-Type of application/sparql-results+xml or application/sparql-results+json.
+* Expect *true* result.
+
+***
+
+*query-post-form* - query via URL-encoded POST
 
 		POST /sparql/ HTTP/1.1
 		Host: www.example
@@ -207,7 +275,13 @@ Some of the following tests also test the response content for expected results.
 		
 		query=ASK%20%7B%7D
 
-* query-post-direct - query via POST directly
+* Expect 2xx or 3xx response.
+* Expect Content-Type of application/sparql-results+xml or application/sparql-results+json.
+* Expect *true* result.
+
+***
+
+*query-post-direct* - query via POST directly
 
 		POST /sparql/ HTTP/1.1
 		Host: www.example
@@ -217,29 +291,47 @@ Some of the following tests also test the response content for expected results.
 		
 		ASK {}
 
-* query-dataset-default-graph - query with protocol-specified default graph
+* Expect 2xx or 3xx response.
+* Expect Content-Type of application/sparql-results+xml or application/sparql-results+json.
+* Expect *true* result.
 
-		POST /sparql/?default-graph-uri=http%3A%2F%2F@@.example.org%2Fdata1.rdf HTTP/1.1
+***
+
+*query-dataset-default-graph* - query with protocol-specified default graph
+
+		POST /sparql/?default-graph-uri=http%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata1.rdf HTTP/1.1
 		Host: www.example
 		User-agent: sparql-client/0.1
 		Content-Type: application/sparql-query
 		Content-Length: XXX
 		
-		ASK { <http://@@.example.org/data1.rdf> ?p ?o }
+		ASK { <http://kasei.us/2009/09/sparql/data/data1.rdf> ?p ?o }
 
-* query-dataset-default-graphs - query with protocol-specified default graphs
+* Expect 2xx or 3xx response.
+* Expect Content-Type of application/sparql-results+xml or application/sparql-results+json.
+* Expect *true* result.
 
-		POST /sparql/?default-graph-uri=http%3A%2F%2F@@.example.org%2Fdata1.rdf&default-graph-uri=http%3A%2F%2F@@.example.org%2Fdata2.rdf HTTP/1.1
+***
+
+*query-dataset-default-graphs* - query with protocol-specified default graphs
+
+		POST /sparql/?default-graph-uri=http%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata1.rdf&default-graph-uri=http%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata2.rdf HTTP/1.1
 		Host: www.example
 		User-agent: sparql-client/0.1
 		Content-Type: application/sparql-query
 		Content-Length: XXX
 		
-		ASK { <http://@@.example.org/data1.rdf> ?p ?o . <http://@@.example.org/data2.rdf> ?p ?o }
+		ASK { <http://kasei.us/2009/09/sparql/data/data1.rdf> ?p ?o . <http://kasei.us/2009/09/sparql/data/data2.rdf> ?p ?o }
 
-* query-dataset-named-graphs - query with protocol-specified named graphs
+* Expect 2xx or 3xx response.
+* Expect Content-Type of application/sparql-results+xml or application/sparql-results+json.
+* Expect *true* result.
 
-		POST /sparql/?named-graph-uri=http%3A%2F%2F@@.example.org%2Fdata1.rdf&named-graph-uri=http%3A%2F%2F@@.example.org%2Fdata2.rdf HTTP/1.1
+***
+
+*query-dataset-named-graphs* - query with protocol-specified named graphs
+
+		POST /sparql/?named-graph-uri=http%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata1.rdf&named-graph-uri=http%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata2.rdf HTTP/1.1
 		Host: www.example
 		User-agent: sparql-client/0.1
 		Content-Type: application/sparql-query
@@ -247,9 +339,15 @@ Some of the following tests also test the response content for expected results.
 		
 		ASK { GRAPH ?g { ?s ?p ?o } }
 
-* query-dataset-full - query with protocol-specified dataset (both named and default graphs)
+* Expect 2xx or 3xx response.
+* Expect Content-Type of application/sparql-results+xml or application/sparql-results+json.
+* Expect *true* result.
 
-		POST /sparql/?default-graph-uri=http%3A%2F%2F@@.example.org%2Fdata3.rdf&named-graph-uri=http%3A%2F%2F@@.example.org%2Fdata1.rdf&named-graph-uri=http%3A%2F%2F@@.example.org%2Fdata2.rdf HTTP/1.1
+***
+
+*query-dataset-full* - query with protocol-specified dataset (both named and default graphs)
+
+		POST /sparql/?default-graph-uri=http%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata3.rdf&named-graph-uri=http%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata1.rdf&named-graph-uri=http%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata2.rdf HTTP/1.1
 		Host: www.example
 		User-agent: sparql-client/0.1
 		Content-Type: application/sparql-query
@@ -257,17 +355,29 @@ Some of the following tests also test the response content for expected results.
 		
 		SELECT ?g ?x ?s { ?x ?y ?o  GRAPH ?g { ?s ?p ?o } }
 
-* query-multiple-dataset - query specifying dataset in both query string and protocol; test for use of protocol-specified dataset (test relies on the endpoint allowing client-specified RDF datasets; returns 400 otherwise)
+* Expect 2xx or 3xx response.
+* Expect Content-Type of application/sparql-results+xml or application/sparql-results+json.
+* Expect *true* result.
 
-		POST /sparql/?default-graph-uri=http%3A%2F%2F@@.example.org%2Fdata2.rdf HTTP/1.1
+***
+
+*query-multiple-dataset* - query specifying dataset in both query string and protocol; test for use of protocol-specified dataset (test relies on the endpoint allowing client-specified RDF datasets; returns 400 otherwise)
+
+		POST /sparql/?default-graph-uri=http%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata2.rdf HTTP/1.1
 		Host: www.example
 		User-agent: sparql-client/0.1
 		Content-Type: application/sparql-query
 		Content-Length: XXX
 		
-		ASK FROM <http://@@.example.org/data1.rdf> { <data1.rdf> ?p ?o }
+		ASK FROM <http://kasei.us/2009/09/sparql/data/data1.rdf> { <data1.rdf> ?p ?o }
 
-* query-content-type-select - query appropriate content type (expect one of: XML, JSON, CSV, TSV)
+* Expect 2xx or 3xx response.
+* Expect Content-Type of application/sparql-results+xml or application/sparql-results+json.
+* Expect *true* result.
+
+***
+
+*query-content-type-select* - query appropriate content type (expect one of: XML, JSON, CSV, TSV)
 
 		POST /sparql/ HTTP/1.1
 		Host: www.example
@@ -277,7 +387,12 @@ Some of the following tests also test the response content for expected results.
 		
 		SELECT (1 AS ?value) {}
 
-* query-content-type-ask - query appropriate content type (expect one of: XML, JSON)
+* Expect 2xx or 3xx response.
+* Expect Content-Type of application/sparql-results+xml, application/sparql-results+json, text/tab-separated-values, or text/csv.
+
+***
+
+*query-content-type-ask* - query appropriate content type (expect one of: XML, JSON)
 
 		POST /sparql/ HTTP/1.1
 		Host: www.example
@@ -287,7 +402,12 @@ Some of the following tests also test the response content for expected results.
 		
 		ASK {}
 
-* query-content-type-describe - query appropriate content type (expect one of: RDF/XML, Turtle, N-Triples, RDFa)
+* Expect 2xx or 3xx response.
+* Expect Content-Type of application/sparql-results+xml or application/sparql-results+json.
+
+***
+
+*query-content-type-describe* - query appropriate content type (expect one of: RDF/XML, Turtle)
 
 		POST /sparql/ HTTP/1.1
 		Host: www.example
@@ -297,7 +417,12 @@ Some of the following tests also test the response content for expected results.
 		
 		DESCRIBE <http://example.org/>
 
-* query-content-type-construct - query appropriate content type (expect one of: RDF/XML, Turtle, N-Triples, RDFa)
+* Expect 2xx or 3xx response.
+* Expect Content-Type of application/rdf+xml, application/rdf+json or text/turtle.
+
+***
+
+*query-content-type-construct* - query appropriate content type (expect one of: RDF/XML, Turtle)
 
 		POST /sparql/ HTTP/1.1
 		Host: www.example
@@ -307,7 +432,12 @@ Some of the following tests also test the response content for expected results.
 		
 		CONSTRUCT { <s> <p> 1 } WHERE {}
 
-* update-dataset-default-graph - update with protocol-specified default graph
+* Expect 2xx or 3xx response.
+* Expect Content-Type of application/rdf+xml, application/rdf+json or text/turtle.
+
+***
+
+*update-dataset-default-graph* - update with protocol-specified default graph
 
 		POST /sparql?using-graph-uri=http%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata1.rdf HTTP/1.1
 		Host: www.example
@@ -328,6 +458,8 @@ Some of the following tests also test the response content for expected results.
 			?s a foaf:Document
 		}
 
+* Expect 2xx or 3xx response.
+
 followed by
 
 		POST /sparql HTTP/1.1
@@ -342,7 +474,13 @@ followed by
 			}
 		}
 
-* update-dataset-default-graphs - update with protocol-specified default graphs
+* Expect 2xx or 3xx response.
+* Expect Content-Type of application/sparql-results+xml or application/sparql-results+json.
+* Expect *true* result.
+
+***
+
+*update-dataset-default-graphs* - update with protocol-specified default graphs
 
 		POST /sparql?using-graph-uri=http%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata1.rdf&using-graph-uri=http%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata2.rdf HTTP/1.1
 		Host: www.example
@@ -353,7 +491,11 @@ followed by
 		PREFIX dc: <http://purl.org/dc/terms/>
 		PREFIX foaf: <http://xmlns.com/foaf/0.1/>
 		CLEAR ALL ;
-		INSERT DATA { GRAPH <http://kasei.us/2009/09/sparql/data/data1.rdf> { <http://kasei.us/2009/09/sparql/data/data1.rdf> a foaf:Document } } ;
+		INSERT DATA {
+			GRAPH <http://kasei.us/2009/09/sparql/data/data1.rdf> { <http://kasei.us/2009/09/sparql/data/data1.rdf> a foaf:Document }
+			GRAPH <http://kasei.us/2009/09/sparql/data/data2.rdf> { <http://kasei.us/2009/09/sparql/data/data2.rdf> a foaf:Document }
+			GRAPH <http://kasei.us/2009/09/sparql/data/data3.rdf> { <http://kasei.us/2009/09/sparql/data/data3.rdf> a foaf:Document }
+		} ;
 		INSERT {
 			GRAPH <http://example.org/protocol-update-dataset-graphs-test/> {
 				?s a dc:BibliographicResource
@@ -362,6 +504,8 @@ followed by
 		WHERE {
 			?s a foaf:Document
 		}
+
+* Expect 2xx or 3xx response.
 
 followed by
 
@@ -376,17 +520,136 @@ followed by
 				<http://kasei.us/2009/09/sparql/data/data1.rdf> a <http://purl.org/dc/terms/BibliographicResource> .
 				<http://kasei.us/2009/09/sparql/data/data2.rdf> a <http://purl.org/dc/terms/BibliographicResource> .
 			}
+			FILTER NOT EXISTS {
+				GRAPH <http://example.org/protocol-update-dataset-test/> {
+					<http://kasei.us/2009/09/sparql/data/data3.rdf> a <http://purl.org/dc/terms/BibliographicResource> .
+				}
+			}
 		}
 
-* update-dataset-named-graphs - update with protocol-specified named graphs
+* Expect 2xx or 3xx response.
+* Expect Content-Type of application/sparql-results+xml or application/sparql-results+json.
+* Expect *true* result.
 
-		@@ fill in details
+***
 
-* update-dataset-full - update with protocol-specified dataset (both named and default graphs)
+*update-dataset-named-graphs* - update with protocol-specified named graphs
 
-		@@ fill in details
+		POST /sparql?using-named-graph-uri=http%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata1.rdf&using-named-graph-uri=http%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata2.rdf HTTP/1.1
+		Host: www.example
+		User-agent: sparql-client/0.1
+		Content-Type: application/sparql-update
+		Content-Length: XXX
+		
+		PREFIX dc: <http://purl.org/dc/terms/>
+		PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+		CLEAR ALL ;
+		INSERT DATA {
+			GRAPH <http://kasei.us/2009/09/sparql/data/data1.rdf> { <http://kasei.us/2009/09/sparql/data/data1.rdf> a foaf:Document }
+			GRAPH <http://kasei.us/2009/09/sparql/data/data2.rdf> { <http://kasei.us/2009/09/sparql/data/data2.rdf> a foaf:Document }
+			GRAPH <http://kasei.us/2009/09/sparql/data/data3.rdf> { <http://kasei.us/2009/09/sparql/data/data3.rdf> a foaf:Document }
+		} ;
+		INSERT {
+			GRAPH <http://example.org/protocol-update-dataset-graphs-test/> {
+				?s a dc:BibliographicResource
+			}
+		}
+		WHERE {
+			GRAPH ?g {
+				?s a foaf:Document
+			}
+		}
 
-* update-post-form - update via URL-encoded POST
+* Expect 2xx or 3xx response.
+
+followed by
+
+		POST /sparql HTTP/1.1
+		Host: www.example
+		User-agent: sparql-client/0.1
+		Content-Type: application/sparql-query
+		Content-Length: XXX
+		
+		ASK {
+			GRAPH <http://example.org/protocol-update-dataset-test/> {
+				<http://kasei.us/2009/09/sparql/data/data1.rdf> a <http://purl.org/dc/terms/BibliographicResource> .
+				<http://kasei.us/2009/09/sparql/data/data2.rdf> a <http://purl.org/dc/terms/BibliographicResource> .
+			}
+			FILTER NOT EXISTS {
+				GRAPH <http://example.org/protocol-update-dataset-test/> {
+					<http://kasei.us/2009/09/sparql/data/data3.rdf> a <http://purl.org/dc/terms/BibliographicResource> .
+				}
+			}
+		}
+
+* Expect 2xx or 3xx response.
+* Expect Content-Type of application/sparql-results+xml or application/sparql-results+json.
+* Expect *true* result.
+
+***
+
+*update-dataset-full* - update with protocol-specified dataset (both named and default graphs)
+
+		POST /sparql?using-graph-uri=http%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata1.rdf&using-named-graph-uri=http%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata2.rdf HTTP/1.1
+		Host: www.example
+		User-agent: sparql-client/0.1
+		Content-Type: application/sparql-update
+		Content-Length: XXX
+		
+		PREFIX dc: <http://purl.org/dc/terms/>
+		PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+		CLEAR ALL ;
+		INSERT DATA {
+			GRAPH <http://kasei.us/2009/09/sparql/data/data1.rdf> { <http://kasei.us/2009/09/sparql/data/data1.rdf> a foaf:Document }
+			GRAPH <http://kasei.us/2009/09/sparql/data/data2.rdf> { <http://kasei.us/2009/09/sparql/data/data2.rdf> a foaf:Document }
+			GRAPH <http://kasei.us/2009/09/sparql/data/data3.rdf> { <http://kasei.us/2009/09/sparql/data/data3.rdf> a foaf:Document }
+		} ;
+		INSERT {
+			GRAPH <http://example.org/protocol-update-dataset-graphs-test/> {
+				?s <http://example.org/in> ?in
+			}
+		}
+		WHERE {
+			{
+				GRAPH ?g { ?s a foaf:Document }
+				BIND(?in AS ?g)
+			}
+			UNION
+			{
+				?s a foaf:Document .
+				BIND(?in AS "default")
+			}
+		}
+
+* Expect 2xx or 3xx response.
+
+followed by
+
+		POST /sparql HTTP/1.1
+		Host: www.example
+		User-agent: sparql-client/0.1
+		Content-Type: application/sparql-query
+		Content-Length: XXX
+		
+		ASK {
+			GRAPH <http://example.org/protocol-update-dataset-test/> {
+				<http://kasei.us/2009/09/sparql/data/data1.rdf> <http://example.org/in> "default" .
+				<http://kasei.us/2009/09/sparql/data/data2.rdf> <http://example.org/in> <http://kasei.us/2009/09/sparql/data/data2.rdf> .
+			}
+			FILTER NOT EXISTS {
+				GRAPH <http://example.org/protocol-update-dataset-test/> {
+					<http://kasei.us/2009/09/sparql/data/data3.rdf> ?p ?o
+				}
+			}
+		}
+
+* Expect 2xx or 3xx response.
+* Expect Content-Type of application/sparql-results+xml or application/sparql-results+json.
+* Expect *true* result.
+
+***
+
+*update-post-form* - update via URL-encoded POST
 
 		POST /sparql/ HTTP/1.1
 		Host: www.example
@@ -396,7 +659,11 @@ followed by
 		
 		update=CLEAR%20ALL
 
-* update-post-direct - update via POST directly
+* Expect 2xx or 3xx response.
+
+***
+
+*update-post-direct* - update via POST directly
 
 		POST /sparql/ HTTP/1.1
 		Host: www.example
@@ -406,9 +673,11 @@ followed by
 		
 		CLEAR ALL
 
-* update-base-uri - test for service-defined BASE URI ("which MAY be the service endpoint")
+* Expect 2xx or 3xx response.
 
-*NOTE*: For this to test that an *update* has a default BASE URI, the test will have to span multiple requests: an insert that assumes a base uri, followed by a query to extract the new value and test it for base uri resolution.
+***
+
+*update-base-uri* - test for service-defined BASE URI ("which MAY be the service endpoint").
 
 		POST /sparql/ HTTP/1.1
 		Host: www.example
@@ -416,7 +685,10 @@ followed by
 		Content-Type: application/sparql-update
 		Content-Length: XXX
 		
-		CLEAR GRAPH <http://example.org/protocol-base-test/> ; INSERT DATA { GRAPH <http://example.org/protocol-base-test/> { <http://example.org/s> <http://example.org/p> <test> } }
+		CLEAR GRAPH <http://example.org/protocol-base-test/> ;
+		INSERT DATA { GRAPH <http://example.org/protocol-base-test/> { <http://example.org/s> <http://example.org/p> <test> } }
+
+* Expect 2xx or 3xx response.
 
 followed by
 
@@ -424,6 +696,15 @@ followed by
 		Host: www.example
 		User-agent: sparql-client/0.1
 		Content-Type: application/sparql-query
+		Accept: application/sparql-results+xml
 		Content-Length: XXX
 		
-		SELECT ?o WHERE { GRAPH <http://example.org/protocol-base-test/> { <http://example.org/s> <http://example.org/p> ?o } }
+		SELECT ?o WHERE {
+			GRAPH <http://example.org/protocol-base-test/> {
+				<http://example.org/s> <http://example.org/p> ?o
+			}
+		}
+
+* Expect 2xx or 3xx response.
+* Expect Content-Type of application/sparql-results+xml.
+* Expect one result with ?o bound to an IRI that is *not* &lt;test&gt;.
