@@ -469,6 +469,7 @@ followed by
 		POST /sparql HTTP/1.1
 		Host: www.example
 		User-agent: sparql-client/0.1
+		Accept: application/sparql-results+xml
 		Content-Type: application/sparql-query
 		Content-Length: XXX
 		
@@ -479,7 +480,7 @@ followed by
 		}
 
 * Expect 2xx or 3xx response.
-* Expect Content-Type of application/sparql-results+xml or application/sparql-results+json.
+* Expect Content-Type of application/sparql-results+xml.
 * Expect *true* result.
 
 ***
@@ -516,6 +517,7 @@ followed by
 		POST /sparql HTTP/1.1
 		Host: www.example
 		User-agent: sparql-client/0.1
+		Accept: application/sparql-results+xml
 		Content-Type: application/sparql-query
 		Content-Length: XXX
 		
@@ -532,7 +534,7 @@ followed by
 		}
 
 * Expect 2xx or 3xx response.
-* Expect Content-Type of application/sparql-results+xml or application/sparql-results+json.
+* Expect Content-Type of application/sparql-results+xml.
 * Expect *true* result.
 
 ***
@@ -571,6 +573,7 @@ followed by
 		POST /sparql HTTP/1.1
 		Host: www.example
 		User-agent: sparql-client/0.1
+		Accept: application/sparql-results+xml
 		Content-Type: application/sparql-query
 		Content-Length: XXX
 		
@@ -587,7 +590,7 @@ followed by
 		}
 
 * Expect 2xx or 3xx response.
-* Expect Content-Type of application/sparql-results+xml or application/sparql-results+json.
+* Expect Content-Type of application/sparql-results+xml.
 * Expect *true* result.
 
 ***
@@ -616,12 +619,12 @@ followed by
 		WHERE {
 			{
 				GRAPH ?g { ?s a foaf:Document }
-				BIND(?in AS ?g)
+				BIND(?g AS ?in)
 			}
 			UNION
 			{
 				?s a foaf:Document .
-				BIND(?in AS "default")
+				BIND("default" AS ?in)
 			}
 		}
 
@@ -632,6 +635,7 @@ followed by
 		POST /sparql HTTP/1.1
 		Host: www.example
 		User-agent: sparql-client/0.1
+		Accept: application/sparql-results+xml
 		Content-Type: application/sparql-query
 		Content-Length: XXX
 		
@@ -648,7 +652,7 @@ followed by
 		}
 
 * Expect 2xx or 3xx response.
-* Expect Content-Type of application/sparql-results+xml or application/sparql-results+json.
+* Expect Content-Type of application/sparql-results+xml.
 * Expect *true* result.
 
 ***
