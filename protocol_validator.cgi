@@ -27,12 +27,6 @@ use constant {
 	FAIL	=> 'fail',
 };
 
-# use constant NEGATIVE_TESTS	=> ();
-# use constant POSITIVE_TESTS => qw(
-# 	query_dataset_default_graph
-# );
-
-
 use constant NEGATIVE_TESTS	=> qw(
 	bad-query-method
 	bad-multiple-queries
