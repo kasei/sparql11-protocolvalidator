@@ -255,7 +255,7 @@ Some of the following tests also test the response content for expected results.
 
 ***
 
-*query-get* - query via GET
+*query_get* - query via GET
 
 		GET /sparql?query=ASK%20%7B%7D
 
@@ -265,7 +265,7 @@ Some of the following tests also test the response content for expected results.
 
 ***
 
-*query-post-form* - query via URL-encoded POST
+*query_post_form* - query via URL-encoded POST
 
 		POST /sparql/ HTTP/1.1
 		Host: www.example
@@ -281,7 +281,7 @@ Some of the following tests also test the response content for expected results.
 
 ***
 
-*query-post-direct* - query via POST directly
+*query_post_direct* - query via POST directly
 
 		POST /sparql/ HTTP/1.1
 		Host: www.example
@@ -297,7 +297,7 @@ Some of the following tests also test the response content for expected results.
 
 ***
 
-*query-dataset-default-graph* - query with protocol-specified default graph
+*query_dataset_default_graph* - query with protocol-specified default graph
 
 		POST /sparql/?default-graph-uri=http%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata1.rdf HTTP/1.1
 		Host: www.example
@@ -313,7 +313,7 @@ Some of the following tests also test the response content for expected results.
 
 ***
 
-*query-dataset-default-graphs* - query with protocol-specified default graphs
+*query_dataset_default_graphs* - query with protocol-specified default graphs
 
 		POST /sparql/?default-graph-uri=http%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata1.rdf&default-graph-uri=http%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata2.rdf HTTP/1.1
 		Host: www.example
@@ -329,7 +329,7 @@ Some of the following tests also test the response content for expected results.
 
 ***
 
-*query-dataset-named-graphs* - query with protocol-specified named graphs
+*query_dataset_named_graphs* - query with protocol-specified named graphs
 
 		POST /sparql/?named-graph-uri=http%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata1.rdf&named-graph-uri=http%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata2.rdf HTTP/1.1
 		Host: www.example
@@ -345,7 +345,7 @@ Some of the following tests also test the response content for expected results.
 
 ***
 
-*query-dataset-full* - query with protocol-specified dataset (both named and default graphs)
+*query_dataset_full* - query with protocol-specified dataset (both named and default graphs)
 
 		POST /sparql/?default-graph-uri=http%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata3.rdf&named-graph-uri=http%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata1.rdf&named-graph-uri=http%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata2.rdf HTTP/1.1
 		Host: www.example
@@ -361,7 +361,7 @@ Some of the following tests also test the response content for expected results.
 
 ***
 
-*query-multiple-dataset* - query specifying dataset in both query string and protocol; test for use of protocol-specified dataset (test relies on the endpoint allowing client-specified RDF datasets; returns 400 otherwise)
+*query_multiple_dataset* - query specifying dataset in both query string and protocol; test for use of protocol-specified dataset (test relies on the endpoint allowing client-specified RDF datasets; returns 400 otherwise)
 
 		POST /sparql/?default-graph-uri=http%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata2.rdf HTTP/1.1
 		Host: www.example
@@ -377,7 +377,7 @@ Some of the following tests also test the response content for expected results.
 
 ***
 
-*query-content-type-select* - query appropriate content type (expect one of: XML, JSON, CSV, TSV)
+*query_content_type_select* - query appropriate content type (expect one of: XML, JSON, CSV, TSV)
 
 		POST /sparql/ HTTP/1.1
 		Host: www.example
@@ -392,7 +392,7 @@ Some of the following tests also test the response content for expected results.
 
 ***
 
-*query-content-type-ask* - query appropriate content type (expect one of: XML, JSON)
+*query_content_type_ask* - query appropriate content type (expect one of: XML, JSON)
 
 		POST /sparql/ HTTP/1.1
 		Host: www.example
@@ -407,7 +407,7 @@ Some of the following tests also test the response content for expected results.
 
 ***
 
-*query-content-type-describe* - query appropriate content type (expect one of: RDF/XML, Turtle)
+*query_content_type_describe* - query appropriate content type (expect one of: RDF/XML, Turtle)
 
 		POST /sparql/ HTTP/1.1
 		Host: www.example
@@ -422,7 +422,7 @@ Some of the following tests also test the response content for expected results.
 
 ***
 
-*query-content-type-construct* - query appropriate content type (expect one of: RDF/XML, Turtle)
+*query_content_type_construct* - query appropriate content type (expect one of: RDF/XML, Turtle)
 
 		POST /sparql/ HTTP/1.1
 		Host: www.example
@@ -437,7 +437,7 @@ Some of the following tests also test the response content for expected results.
 
 ***
 
-*update-dataset-default-graph* - update with protocol-specified default graph
+*update_dataset_default_graph* - update with protocol-specified default graph
 
 		POST /sparql?using-graph-uri=http%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata1.rdf HTTP/1.1
 		Host: www.example
@@ -485,7 +485,7 @@ followed by
 
 ***
 
-*update-dataset-default-graphs* - update with protocol-specified default graphs
+*update_dataset_default_graphs* - update with protocol-specified default graphs
 
 		POST /sparql?using-graph-uri=http%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata1.rdf&using-graph-uri=http%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata2.rdf HTTP/1.1
 		Host: www.example
@@ -539,7 +539,7 @@ followed by
 
 ***
 
-*update-dataset-named-graphs* - update with protocol-specified named graphs
+*update_dataset_named_graphs* - update with protocol-specified named graphs
 
 		POST /sparql?using-named-graph-uri=http%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata1.rdf&using-named-graph-uri=http%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata2.rdf HTTP/1.1
 		Host: www.example
@@ -595,7 +595,7 @@ followed by
 
 ***
 
-*update-dataset-full* - update with protocol-specified dataset (both named and default graphs)
+*update_dataset_full* - update with protocol-specified dataset (both named and default graphs)
 
 		POST /sparql?using-graph-uri=http%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata1.rdf&using-named-graph-uri=http%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata2.rdf HTTP/1.1
 		Host: www.example
@@ -657,7 +657,7 @@ followed by
 
 ***
 
-*update-post-form* - update via URL-encoded POST
+*update_post_form* - update via URL-encoded POST
 
 		POST /sparql/ HTTP/1.1
 		Host: www.example
@@ -671,7 +671,7 @@ followed by
 
 ***
 
-*update-post-direct* - update via POST directly
+*update_post_direct* - update via POST directly
 
 		POST /sparql/ HTTP/1.1
 		Host: www.example
@@ -685,7 +685,7 @@ followed by
 
 ***
 
-*update-base-uri* - test for service-defined BASE URI ("which MAY be the service endpoint").
+*update_base_uri* - test for service-defined BASE URI ("which MAY be the service endpoint").
 
 		POST /sparql/ HTTP/1.1
 		Host: www.example

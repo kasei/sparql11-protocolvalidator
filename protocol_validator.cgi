@@ -18,11 +18,20 @@ use RDF::Trine::Error qw(:try);
 use RDF::Trine::Namespace qw(rdf dc xsd);
 
 our $VERSION	= 0.1;
+our $SHOW_ERROR_DETAIL	= 1;
+our $SUBMIT_URL	= 'http://localhost/protocol_validator.cgi';
+# our $SUBMIT_URL	= 'http://kasei.us/2009/09/sparql/protocol_validator.cgi';
 
 use constant {
 	PASS	=> 'pass',
 	FAIL	=> 'fail',
 };
+
+# use constant NEGATIVE_TESTS	=> ();
+# use constant POSITIVE_TESTS => qw(
+# 	query_dataset_default_graph
+# );
+
 
 use constant NEGATIVE_TESTS	=> qw(
 	bad-query-method
@@ -43,65 +52,65 @@ use constant NEGATIVE_TESTS	=> qw(
 );
 
 use constant POSITIVE_TESTS => qw(
-	query-post-form
-	query-get
-	query-post-direct
-	query-dataset-default-graph
-	query-dataset-default-graphs
-	query-dataset-named-graphs
-	query-dataset-full
-	query-multiple-dataset
-	query-content-type-select
-	query-content-type-ask
-	query-content-type-describe
-	query-content-type-construct
-	update-dataset-default-graph
-	update-dataset-default-graphs
-	update-dataset-named-graphs
-	update-dataset-full
-	update-post-form
-	update-post-direct
-	update-base-uri
+	query_post_form
+	query_get
+	query_post_direct
+	query_dataset_default_graph
+	query_dataset_default_graphs
+	query_dataset_named_graphs
+	query_dataset_full
+	query_multiple_dataset
+	query_content_type_select
+	query_content_type_ask
+	query_content_type_describe
+	query_content_type_construct
+	update_dataset_default_graph
+	update_dataset_default_graphs
+	update_dataset_named_graphs
+	update_dataset_full
+	update_post_form
+	update_post_direct
+	update_base_uri
 );
 
 use constant REQUIRED_TESTS	=> (POSITIVE_TESTS(), NEGATIVE_TESTS());
 use constant OPTIONAL_TESTS	=> ();
 
 use constant DESCRIPTION => {
-	"query-get"	=> "query via GET",
-	"query-post-form"	=> "query via URL-encoded POST",
-	"query-post-direct"	=> "query via POST directly",
-	"query-dataset-default-graph"	=> "query with protocol-specified default graph",
-	"query-dataset-default-graphs"	=> "query with protocol-specified default graphs",
-	"query-dataset-named-graphs"	=> "query with protocol-specified named graphs",
-	"query-dataset-full"	=> "query with protocol-specified dataset (both named and default graphs)",
-	"query-multiple-dataset"	=> "query specifying dataset in both query string and protocol; test for use of protocol-specified dataset", # (test relies on the endpoint allowing client-specified RDF datasets; returns 400 otherwise)
-	"query-content-type-select"	=> "SELECT query appropriate content type (expect one of: XML, JSON, CSV, TSV)",
-	"query-content-type-ask"	=> "ASK query appropriate content type (expect one of: XML, JSON)",
-	"query-content-type-describe"	=> "DESCRIBE query appropriate content type (expect one of: RDF/XML, Turtle, N-Triples, RDFa)",
-	"query-content-type-construct"	=> "CONSTRUCT query appropriate content type (expect one of: RDF/XML, Turtle, N-Triples, RDFa)",
-	"update-dataset-default-graph"	=> "update with protocol-specified default graph",
-	"update-dataset-default-graphs"	=> "update with protocol-specified default graphs",
-	"update-dataset-named-graphs"	=> "update with protocol-specified named graphs",
-	"update-dataset-full"	=> "update with protocol-specified dataset (both named and default graphs)",
-	"update-post-form"	=> "update via URL-encoded POST",
-	"update-post-direct"	=> "update via POST directly",
-	"update-base-uri"	=> "test for service-defined BASE URI (\"which MAY be the service endpoint\")",
-	"bad-query-method"	=> "invoke query operation with a method other than GET or POST",
-	"bad-multiple-queries"	=> "invoke query operation with more than one query string",
-	"bad-query-wrong-media-type"	=> "invoke query operation with a POST with media type that's not url-encoded or application/sparql-query",
-	"bad-query-missing-form-type"	=> "invoke query operation with url-encoded body, but without application/x-www-url-form-urlencoded media type",
-	"bad-query-missing-direct-type"	=> "invoke query operation with SPARQL body, but without application/sparql-query media type",
-	"bad-query-non-utf8"	=> "invoke query operation with direct POST, but with a non-UTF8 encoding (UTF-16)",
-	"bad-query-syntax"	=> "invoke query operation with invalid query syntax (4XX result)",
-	"bad-update-get"	=> "invoke update operation with GET",
-	"bad-multiple-updates"	=> "invoke update operation with more than one update string",
-	"bad-update-wrong-media-type"	=> "invoke update operation with a POST with media type that's not url-encoded or application/sparql-update",
-	"bad-update-missing-form-type"	=> "invoke update operation with url-encoded body, but without application/x-www-url-form-urlencoded media type",
-	"bad-update-missing-direct-type"	=> "invoke update operation with SPARQL body, but without application/sparql-update media type",
-	"bad-update-non-utf8"	=> "invoke update operation with direct POST, but with a non-UTF8 encoding",
-	"bad-update-syntax"	=> "invoke update operation with invalid update syntax (4XX result)",
-	"bad-update-dataset-conflict"	=> "invoke update with both using-graph-uri/using-named-graph-uri parameter and USING/WITH clause",
+	"query_get"	=> "query via GET",
+	"query_post_form"	=> "query via URL-encoded POST",
+	"query_post_direct"	=> "query via POST directly",
+	"query_dataset_default_graph"	=> "query with protocol-specified default graph",
+	"query_dataset_default_graphs"	=> "query with protocol-specified default graphs",
+	"query_dataset_named_graphs"	=> "query with protocol-specified named graphs",
+	"query_dataset_full"	=> "query with protocol-specified dataset (both named and default graphs)",
+	"query_multiple_dataset"	=> "query specifying dataset in both query string and protocol; test for use of protocol-specified dataset", # (test relies on the endpoint allowing client-specified RDF datasets; returns 400 otherwise)
+	"query_content_type_select"	=> "SELECT query appropriate content type (expect one of: XML, JSON, CSV, TSV)",
+	"query_content_type_ask"	=> "ASK query appropriate content type (expect one of: XML, JSON)",
+	"query_content_type_describe"	=> "DESCRIBE query appropriate content type (expect one of: RDF/XML, Turtle, N-Triples, RDFa)",
+	"query_content_type_construct"	=> "CONSTRUCT query appropriate content type (expect one of: RDF/XML, Turtle, N-Triples, RDFa)",
+	"update_dataset_default_graph"	=> "update with protocol-specified default graph",
+	"update_dataset_default_graphs"	=> "update with protocol-specified default graphs",
+	"update_dataset_named_graphs"	=> "update with protocol-specified named graphs",
+	"update_dataset_full"	=> "update with protocol-specified dataset (both named and default graphs)",
+	"update_post_form"	=> "update via URL-encoded POST",
+	"update_post_direct"	=> "update via POST directly",
+	"update_base_uri"	=> "test for service-defined BASE URI (\"which MAY be the service endpoint\")",
+	"bad_query_method"	=> "invoke query operation with a method other than GET or POST",
+	"bad_multiple_queries"	=> "invoke query operation with more than one query string",
+	"bad_query_wrong_media_type"	=> "invoke query operation with a POST with media type that's not url-encoded or application/sparql-query",
+	"bad_query_missing_form_type"	=> "invoke query operation with url-encoded body, but without application/x-www-url-form-urlencoded media type",
+	"bad_query_missing_direct_type"	=> "invoke query operation with SPARQL body, but without application/sparql-query media type",
+	"bad_query_non_utf8"	=> "invoke query operation with direct POST, but with a non-UTF8 encoding (UTF-16)",
+	"bad_query_syntax"	=> "invoke query operation with invalid query syntax (4XX result)",
+	"bad_update_get"	=> "invoke update operation with GET",
+	"bad_multiple_updates"	=> "invoke update operation with more than one update string",
+	"bad_update_wrong_media_type"	=> "invoke update operation with a POST with media type that's not url-encoded or application/sparql-update",
+	"bad_update_missing_form_type"	=> "invoke update operation with url-encoded body, but without application/x-www-url-form-urlencoded media type",
+	"bad_update_missing_direct_type"	=> "invoke update operation with SPARQL body, but without application/sparql-update media type",
+	"bad_update_non_utf8"	=> "invoke update operation with direct POST, but with a non-UTF8 encoding",
+	"bad_update_syntax"	=> "invoke update operation with invalid update syntax (4XX result)",
+	"bad_update_dataset_conflict"	=> "invoke update with both using-graph-uri/using-named-graph-uri parameter and USING/WITH clause",
 };
 
 our $VALIDATOR_IRI	= 'http://www.w3.org/2009/sparql/protocol_validator#validator';
@@ -252,6 +261,7 @@ sub validate {
 	if (1) {
 		### Negative tests
 		my @tests	= bad_requests( $qurl, $uurl );
+		my %tests;
 		foreach my $t (@tests) {
 			my ($name, $req)	= @$t;
 			unless ($qurl) {
@@ -261,7 +271,12 @@ sub validate {
 				next if $name =~ /update/i;
 			}
 			
-			my $resp		= $ua->request( $req );
+			$tests{ $name }	= $req;
+		}
+		
+		foreach my $name (NEGATIVE_TESTS) {
+			my $req		= $tests{ $name };
+			my $resp	= $ua->request( $req );
 			my $code			= $resp->code;
 			if ($code =~ /^[45]\d\d$/) {
 				add_result( $res, $name, PASS );
@@ -512,30 +527,31 @@ END
 		<li>
 			<span class="${class}">${status}</span> ${desc}
 END
-		if (length($msg)) {
-			my $reqs	= '';
-			my $resps	= '';
-			if (ref($detail)) {
-				my ($req, $resp)	= @$detail;
-				$reqs	= $req->as_string;
-				$resps	= $resp->as_string;
-				for ($reqs, $resps) {
-					s/</&lt;/g;
-					s/"/&quot;/g;
-					s{\n}{<br/>\n}g;
+		if ($SHOW_ERROR_DETAIL) { # XXX show failure details in html
+			if (length($msg)) {
+				my $reqs	= '';
+				my $resps	= '';
+				if (ref($detail)) {
+					my ($req, $resp)	= @$detail;
+					$reqs	= $req->as_string;
+					$resps	= $resp->as_string;
+					for ($reqs, $resps) {
+						s/</&lt;/g;
+						s/"/&quot;/g;
+						s{\n}{<br/>\n}g;
+					}
 				}
-			}
-			print <<"END";
-			<div class="details">
-				<p>$msg</p>
-				<p>Request:</p>
-				<p class="trace">$reqs</p>
-				<p>Response:</p>
-				<p class="trace">$resps</p>
-			</div>
+				print <<"END";
+				<div class="details">
+					<p>$msg</p>
+					<p>Request:</p>
+					<p class="trace">$reqs</p>
+					<p>Response:</p>
+					<p class="trace">$resps</p>
+				</div>
 END
+			}
 		}
-		
 		print <<"END";
 		</li>
 END
@@ -580,9 +596,9 @@ sub print_form {
 	my $uurl		= shift;
 	my $software	= shift;
 	print <<"END";
-	<form action="http://kasei.us/2009/09/sparql/protocol_validator.cgi" method="get"> <!-- @@ change to final W3C URI -->
+	<form action="$SUBMIT_URL" method="get"> <!-- @@ change to final W3C URI -->
 		SPARQL Query Endpoint: <input name="query_url" id="query_url" type="text" size="40" value="$qurl" /><br/>
-<!--		SPARQL Update Endpoint: <input name="update_url" id="update_url" type="text" size="40" value="$uurl" /><br/> -->
+		SPARQL Update Endpoint: <input name="update_url" id="update_url" type="text" size="40" value="$uurl" /><br/>
 		Implementation software IRI: <input name="software" id="software" type="text" size="40" value="$software" /><br/>
 <!--		<input name="bp" id="bp" type="checkbox" value="1" /> Run best-practices tests<br/> -->
 		<input name="submit" id="submit" type="submit" value="Submit" />
@@ -667,6 +683,74 @@ sub print_html_footer {
 END
 }
 
+sub _positive_test_request {
+	my ($ua, $res, $name, $req)	= @_;
+	my $resp	= $ua->request( $req );
+# 	warn $resp->status_line;
+	if ($resp->is_success) {
+		return $resp;
+	} else {
+		add_result( $res, $name, FAIL, "Expected success response code, but got: " . $resp->status_line, [$req, $resp] );
+		return;
+	}
+}
+
+sub _test_boolean_result_for_true {
+	my ($req, $resp, $res, $name)	= @_;
+	my $type	= $resp->header('Content-Type');
+	my $content	= $resp->decoded_content;
+	my $iter	= ($type =~ /xml/) ? RDF::Trine::Iterator->from_string($content) : RDF::Trine::Iterator->from_json($content);
+	my $r		= $iter->next;
+	if ($r) {
+		add_result( $res, $name, PASS );
+	} else {
+		add_result( $res, $name, FAIL, "Expected true SPARQL boolean result, but got false", [$req, $resp] );
+	}
+}
+
+sub _test_result_for_select_query {
+	my ($req, $resp, $res, $name)	= @_;
+	my $type	= $resp->header('Content-Type');
+	if ($type =~ m#application/sparql-results[+]xml#) {
+		add_result( $res, $name, PASS );
+	} elsif ($type =~ m#application/sparql-results[+]json#) {
+		add_result( $res, $name, PASS );
+	} elsif ($type =~ m#text/tab-separated-values#) {
+		add_result( $res, $name, PASS );
+	} elsif ($type =~ m#text/csv#) {
+		add_result( $res, $name, PASS );
+	} else {
+		add_result( $res, $name, FAIL, "Expected SPARQL Results format appropriate for SELECT form, but got $type", [$req, $resp] );
+	}
+}
+
+sub _test_result_for_ask_query {
+	my ($req, $resp, $res, $name)	= @_;
+	Carp::confess unless (blessed($resp) and $resp->can('header'));
+	my $type	= $resp->header('Content-Type');
+	if ($type =~ m#application/sparql-results[+]xml#) {
+		add_result( $res, $name, PASS );
+	} elsif ($type =~ m#application/sparql-results[+]json#) {
+		add_result( $res, $name, PASS );
+	} else {
+		add_result( $res, $name, FAIL, "Expected SPARQL Results format appropriate for ASK form, but got $type", [$req, $resp] );
+	}
+}
+
+sub _test_result_for_rdf_type {
+	my ($req, $resp, $res, $name)	= @_;
+	my $type	= $resp->header('Content-Type');
+	
+	# RDF/XML, Turtle, N-Triples, RDFa
+	if ($type =~ m#^((application/rdf[+](xml|json))|(text/turtle))#) {
+		add_result( $res, $name, PASS );
+		# XXX @@
+	} else {
+		add_result( $res, $name, FAIL, "Expected RDF Results format, but got $type", [$req, $resp] );
+	}
+}
+
+sub __________TESTS__________ {}
 
 sub bad_requests {
 	my $qurl	= shift;
@@ -784,73 +868,6 @@ END
 	return @reqs;
 }
 
-sub _positive_test_request {
-	my ($ua, $res, $name, $req)	= @_;
-	my $resp	= $ua->request( $req );
-# 	warn $resp->status_line;
-	if ($resp->is_success) {
-		return $resp;
-	} else {
-		add_result( $res, $name, FAIL, "Expected success response code, but got: " . $resp->status_line, [$req, $resp] );
-		return;
-	}
-}
-
-sub _test_boolean_result_for_true {
-	my ($req, $resp, $res, $name)	= @_;
-	my $type	= $resp->header('Content-Type');
-	my $content	= $resp->decoded_content;
-	my $iter	= ($type =~ /xml/) ? RDF::Trine::Iterator->from_string($content) : RDF::Trine::Iterator->from_json($content);
-	my $r		= $iter->next;
-	if ($r) {
-		add_result( $res, $name, PASS );
-	} else {
-		add_result( $res, $name, FAIL, "Expected true SPARQL boolean result, but got false", [$req, $resp] );
-	}
-}
-
-sub _test_result_for_select_query {
-	my ($req, $resp, $res, $name)	= @_;
-	my $type	= $resp->header('Content-Type');
-	if ($type =~ m#application/sparql-results[+]xml#) {
-		add_result( $res, $name, PASS );
-	} elsif ($type =~ m#application/sparql-results[+]json#) {
-		add_result( $res, $name, PASS );
-	} elsif ($type =~ m#text/tab-separated-values#) {
-		add_result( $res, $name, PASS );
-	} elsif ($type =~ m#text/csv#) {
-		add_result( $res, $name, PASS );
-	} else {
-		add_result( $res, $name, FAIL, "Expected SPARQL Results format appropriate for SELECT form, but got $type", [$req, $resp] );
-	}
-}
-
-sub _test_result_for_ask_query {
-	my ($req, $resp, $res, $name)	= @_;
-	Carp::confess unless (blessed($resp) and $resp->can('header'));
-	my $type	= $resp->header('Content-Type');
-	if ($type =~ m#application/sparql-results[+]xml#) {
-		add_result( $res, $name, PASS );
-	} elsif ($type =~ m#application/sparql-results[+]json#) {
-		add_result( $res, $name, PASS );
-	} else {
-		add_result( $res, $name, FAIL, "Expected SPARQL Results format appropriate for ASK form, but got $type", [$req, $resp] );
-	}
-}
-
-sub _test_result_for_rdf_type {
-	my ($req, $resp, $res, $name)	= @_;
-	my $type	= $resp->header('Content-Type');
-	
-	# RDF/XML, Turtle, N-Triples, RDFa
-	if ($type =~ m#^((application/rdf[+](xml|json))|(text/turtle))#) {
-		add_result( $res, $name, PASS );
-		# XXX @@
-	} else {
-		add_result( $res, $name, FAIL, "Expected RDF Results format, but got $type", [$req, $resp] );
-	}
-}
-
 sub test_query_get {
 	my ($ua, $qurl, $uurl, $opt, $res, $name)	= @_;
 	my $req		= GET("${qurl}?query=ASK%20%7B%7D&default-graph-uri=http%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata0.rdf");
@@ -891,8 +908,36 @@ sub test_query_post_direct {
 	}
 }
 
+sub _setup_dataset {
+	my $ua		= shift;
+	my $uurl	= shift;
+	my $res		= shift;
+	my $name	= shift;
+	my $dgraphs	= shift;
+	my $graphs	= shift;
+	my @ops		= ('DROP ALL');
+	foreach my $g (@$dgraphs) {
+		push(@ops, "LOAD <$g>");
+	}
+	foreach my $g (@$graphs) {
+		push(@ops, "LOAD <$g> INTO GRAPH <$g>");
+	}
+	my $sparql	= join(" ;\n", @ops);
+	my $req		= POST($uurl, [
+					'update' => $sparql,
+				]);
+	my $resp	= $ua->request( $req );
+	if ($resp->is_success) {
+		return 1;
+	} else {
+		add_result( $res, $name, FAIL, "Failed to setup dataset; " . $resp->status_line, [$req, $resp] );
+		return;
+	}
+}
+
 sub test_query_dataset_default_graph {
 	my ($ua, $qurl, $uurl, $opt, $res, $name)	= @_;
+	_setup_dataset($ua, $uurl, $res, $name, [], ['http://kasei.us/2009/09/sparql/data/data1.rdf']) or return;
 	my $req		= POST($qurl, [
 					'query' => 'ASK { <http://kasei.us/2009/09/sparql/data/data1.rdf> ?p ?o }',
 					'default-graph-uri' => 'http://kasei.us/2009/09/sparql/data/data1.rdf'
@@ -909,6 +954,7 @@ sub test_query_dataset_default_graph {
 
 sub test_query_dataset_default_graphs {
 	my ($ua, $qurl, $uurl, $opt, $res, $name)	= @_;
+	_setup_dataset($ua, $uurl, $res, $name, [], ['http://kasei.us/2009/09/sparql/data/data1.rdf', 'http://kasei.us/2009/09/sparql/data/data2.rdf']) or return;
 	my $req		= POST($qurl, [
 					'query' => 'ASK { <http://kasei.us/2009/09/sparql/data/data1.rdf> a ?type . <http://kasei.us/2009/09/sparql/data/data2.rdf> a ?type . }',
 					'default-graph-uri' => 'http://kasei.us/2009/09/sparql/data/data1.rdf',
@@ -926,6 +972,7 @@ sub test_query_dataset_default_graphs {
 
 sub test_query_dataset_named_graphs {
 	my ($ua, $qurl, $uurl, $opt, $res, $name)	= @_;
+	_setup_dataset($ua, $uurl, $res, $name, [], ['http://kasei.us/2009/09/sparql/data/data1.rdf', 'http://kasei.us/2009/09/sparql/data/data2.rdf']) or return;
 	my $req		= POST($qurl, [
 					'query' => 'ASK { GRAPH ?g1 { <http://kasei.us/2009/09/sparql/data/data1.rdf> a ?type } GRAPH ?g2 { <http://kasei.us/2009/09/sparql/data/data2.rdf> a ?type } }',
 					'named-graph-uri' => 'http://kasei.us/2009/09/sparql/data/data1.rdf',
@@ -943,6 +990,7 @@ sub test_query_dataset_named_graphs {
 
 sub test_query_dataset_full {
 	my ($ua, $qurl, $uurl, $opt, $res, $name)	= @_;
+	_setup_dataset($ua, $uurl, $res, $name, [], ['http://kasei.us/2009/09/sparql/data/data1.rdf', 'http://kasei.us/2009/09/sparql/data/data2.rdf', 'http://kasei.us/2009/09/sparql/data/data3.rdf']) or return;
 	my $query	= <<"END";
 ASK {
 	<http://kasei.us/2009/09/sparql/data/data3.rdf> a ?type
@@ -968,6 +1016,7 @@ END
 
 sub test_query_multiple_dataset {
 	my ($ua, $qurl, $uurl, $opt, $res, $name)	= @_;
+	_setup_dataset($ua, $uurl, $res, $name, [], ['http://kasei.us/2009/09/sparql/data/data1.rdf', 'http://kasei.us/2009/09/sparql/data/data2.rdf', 'http://kasei.us/2009/09/sparql/data/data3.rdf']) or return;
 	my $req		= POST($qurl, [
 					'query' => 'ASK FROM <http://kasei.us/2009/09/sparql/data/data3.rdf> { GRAPH ?g1 { <http://kasei.us/2009/09/sparql/data/data1.rdf> a ?type } GRAPH ?g2 { <http://kasei.us/2009/09/sparql/data/data2.rdf> a ?type } }',
 					'named-graph-uri' => 'http://kasei.us/2009/09/sparql/data/data1.rdf',
@@ -1020,6 +1069,8 @@ sub test_query_content_type_construct {
 		_test_result_for_rdf_type( $req, $resp, $res, $name );
 	}
 }
+
+sub __________UPDATE_TESTS__________ {}
 
 sub test_update_post_form {
 	my ($ua, $qurl, $uurl, $opt, $res, $name)	= @_;
@@ -1131,7 +1182,7 @@ sub test_update_dataset_default_graphs {
 		my $sparql	= <<"END";
 PREFIX dc: <http://purl.org/dc/terms/>
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-CLEAR ALL ;
+DROP ALL ;
 INSERT DATA {
 	GRAPH <http://kasei.us/2009/09/sparql/data/data1.rdf> { <http://kasei.us/2009/09/sparql/data/data1.rdf> a foaf:Document }
 	GRAPH <http://kasei.us/2009/09/sparql/data/data2.rdf> { <http://kasei.us/2009/09/sparql/data/data2.rdf> a foaf:Document }
@@ -1185,7 +1236,7 @@ sub test_update_dataset_named_graphs {
 		my $sparql	= <<"END";
 PREFIX dc: <http://purl.org/dc/terms/>
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-CLEAR ALL ;
+DROP ALL ;
 INSERT DATA {
 	GRAPH <http://kasei.us/2009/09/sparql/data/data1.rdf> { <http://kasei.us/2009/09/sparql/data/data1.rdf> a foaf:Document }
 	GRAPH <http://kasei.us/2009/09/sparql/data/data2.rdf> { <http://kasei.us/2009/09/sparql/data/data2.rdf> a foaf:Document }
@@ -1241,7 +1292,7 @@ sub test_update_dataset_full {
 		my $sparql	= <<"END";
 PREFIX dc: <http://purl.org/dc/terms/>
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-CLEAR ALL ;
+DROP ALL ;
 INSERT DATA {
 	GRAPH <http://kasei.us/2009/09/sparql/data/data1.rdf> { <http://kasei.us/2009/09/sparql/data/data1.rdf> a foaf:Document }
 	GRAPH <http://kasei.us/2009/09/sparql/data/data2.rdf> { <http://kasei.us/2009/09/sparql/data/data2.rdf> a foaf:Document }
