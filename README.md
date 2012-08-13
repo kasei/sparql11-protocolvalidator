@@ -38,12 +38,12 @@ It is assumed that the Protocol implementation provides support for all of SPARQ
  and also SPARQL 1.1 Query/Update support for:
 
 * Select expressions
-* CLEAR ALL
-* CLEAR DEFAULT
-* CLEAR NAMED
+* CLEAR
+* DROP
+* LOAD
 
-The graph store available to query and update dataset operations must contain 
-the triples available at the following URLs (in respective named graphs):
+The following RDF files are loaded as appropriate to properly setup the
+graphstore/dataset for some tests:
 
 * http://kasei.us/2009/09/sparql/data/data0.rdf
 * http://kasei.us/2009/09/sparql/data/data1.rdf
