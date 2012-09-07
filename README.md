@@ -65,7 +65,7 @@ Negative tests are expected to fail with a 4xx response code as they represent i
 
 ***
 
-*bad-query-method* - invoke query operation with a method other than GET or POST
+*bad_query_method* - invoke query operation with a method other than GET or POST
 
 		PUT /sparql?query=ASK%20%7B%7D
 
@@ -73,7 +73,7 @@ Negative tests are expected to fail with a 4xx response code as they represent i
 
 ***
 
-*bad-multiple-queries* - invoke query operation with more than one query string
+*bad_multiple_queries* - invoke query operation with more than one query string
 
 		GET /sparql?query=ASK%20%7B%7D&query=SELECT%20%2A%20%7B%7D
 
@@ -81,7 +81,7 @@ Negative tests are expected to fail with a 4xx response code as they represent i
 
 ***
 
-*bad-query-wrong-media-type* - invoke query operation with a POST with media type that's not url-encoded or application/sparql-query
+*bad_query_wrong_media_type* - invoke query operation with a POST with media type that's not url-encoded or application/sparql-query
 
 		POST /sparql/ HTTP/1.1
 		Host: www.example
@@ -95,7 +95,7 @@ Negative tests are expected to fail with a 4xx response code as they represent i
 
 ***
 
-*bad-query-missing-form-type* - invoke query operation with url-encoded body, but without application/x-www-url-form-urlencoded media type
+*bad_query_missing_form_type* - invoke query operation with url-encoded body, but without application/x-www-url-form-urlencoded media type
 
 		POST /sparql/ HTTP/1.1
 		Host: www.example
@@ -108,7 +108,7 @@ Negative tests are expected to fail with a 4xx response code as they represent i
 
 ***
 
-*bad-query-missing-direct-type* - invoke query operation with SPARQL body, but without application/sparql-query media type
+*bad_query_missing_direct_type* - invoke query operation with SPARQL body, but without application/sparql-query media type
 
 		POST /sparql/ HTTP/1.1
 		Host: www.example
@@ -121,7 +121,7 @@ Negative tests are expected to fail with a 4xx response code as they represent i
 
 ***
 
-*bad-query-non-utf8* - invoke query operation with direct POST, but with a non-UTF8 encoding (UTF-16)
+*bad_query_non_utf8* - invoke query operation with direct POST, but with a non-UTF8 encoding (UTF-16)
 
 		### (content body encoded in utf-16)
 		POST /sparql/ HTTP/1.1
@@ -136,7 +136,7 @@ Negative tests are expected to fail with a 4xx response code as they represent i
 
 ***
 
-*bad-query-syntax* - invoke query operation with invalid query syntax (4XX result)
+*bad_query_syntax* - invoke query operation with invalid query syntax (4XX result)
 
 		GET /sparql?query=ASK%20%7B
 
@@ -144,7 +144,7 @@ Negative tests are expected to fail with a 4xx response code as they represent i
 
 ***
 
-*bad-update-get* - invoke update operation with GET
+*bad_update_get* - invoke update operation with GET
 
 		GET /sparql?update=CLEAR%20ALL
 
@@ -152,7 +152,7 @@ Negative tests are expected to fail with a 4xx response code as they represent i
 
 ***
 
-*bad-multiple-updates* - invoke update operation with more than one update string
+*bad_multiple_updates* - invoke update operation with more than one update string
 
 		POST /sparql/ HTTP/1.1
 		Host: www.example
@@ -166,7 +166,7 @@ Negative tests are expected to fail with a 4xx response code as they represent i
 
 ***
 
-*bad-update-wrong-media-type* - invoke update operation with a POST with media type that's not url-encoded or application/sparql-update
+*bad_update_wrong_media_type* - invoke update operation with a POST with media type that's not url-encoded or application/sparql-update
 
 		POST /sparql/ HTTP/1.1
 		Host: www.example
@@ -180,7 +180,7 @@ Negative tests are expected to fail with a 4xx response code as they represent i
 
 ***
 
-*bad-update-missing-form-type* - invoke update operation with url-encoded body, but without application/x-www-url-form-urlencoded media type
+*bad_update_missing_form_type* - invoke update operation with url-encoded body, but without application/x-www-url-form-urlencoded media type
 
 		POST /sparql/ HTTP/1.1
 		Host: www.example
@@ -193,20 +193,7 @@ Negative tests are expected to fail with a 4xx response code as they represent i
 
 ***
 
-*bad-update-missing-direct-type* - invoke update operation with SPARQL body, but without application/sparql-update media type
-
-		POST /sparql/ HTTP/1.1
-		Host: www.example
-		User-agent: sparql-client/0.1
-		Content-Length: XXX
-		
-		CLEAR NAMED
-
-* Expect 4xx response.
-
-***
-
-*bad-update-non-utf8* - invoke update operation with direct POST, but with a non-UTF8 encoding
+*bad_update_non_utf8* - invoke update operation with direct POST, but with a non-UTF8 encoding
 
 		### (content body encoded in utf-16)
 		POST /sparql/ HTTP/1.1
@@ -221,7 +208,7 @@ Negative tests are expected to fail with a 4xx response code as they represent i
 
 ***
 
-*bad-update-syntax* - invoke update operation with invalid update syntax (4XX result)
+*bad_update_syntax* - invoke update operation with invalid update syntax (4XX result)
 
 		POST /sparql/ HTTP/1.1
 		Host: www.example
@@ -235,7 +222,7 @@ Negative tests are expected to fail with a 4xx response code as they represent i
 
 ***
 
-*bad-update-dataset-conflict* - invoke update with both using-graph-uri/using-named-graph-uri parameter and USING/WITH clause
+*bad_update_dataset_conflict* - invoke update with both using-graph-uri/using-named-graph-uri parameter and USING/WITH clause
 
 		POST /sparql/ HTTP/1.1
 		Host: www.example
@@ -313,7 +300,7 @@ Some of the following tests also test the response content for expected results.
 
 ***
 
-*query_dataset_default_graphs* - query with protocol-specified default graphs
+*query_dataset_default_graphs_get* - GET query with protocol-specified default graphs
 
 		POST /sparql/?default-graph-uri=http%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata1.rdf&default-graph-uri=http%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata2.rdf HTTP/1.1
 		Host: www.example
@@ -329,7 +316,35 @@ Some of the following tests also test the response content for expected results.
 
 ***
 
-*query_dataset_named_graphs* - query with protocol-specified named graphs
+*query_dataset_default_graphs_post* - POST query with protocol-specified default graphs
+
+		POST /sparql/?default-graph-uri=http%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata1.rdf&default-graph-uri=http%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata2.rdf HTTP/1.1
+		Host: www.example
+		User-agent: sparql-client/0.1
+		Content-Type: application/sparql-query
+		Content-Length: XXX
+		
+		ASK { <http://kasei.us/2009/09/sparql/data/data1.rdf> ?p ?o . <http://kasei.us/2009/09/sparql/data/data2.rdf> ?p ?o }
+
+* Expect 2xx or 3xx response.
+* Expect Content-Type of application/sparql-results+xml or application/sparql-results+json.
+* Expect *true* result.
+
+***
+
+*query_dataset_named_graphs_get* - GET query with protocol-specified named graphs
+
+		POST /sparql/?named-graph-uri=http%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata1.rdf&named-graph-uri=http%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata2.rdf&query=ASK%20%7B%20GRAPH%20%3Fg%20%7B%20%3Fs%20%3Fp%20%3Fo%20%7D%20%7D HTTP/1.1
+		Host: www.example
+		User-agent: sparql-client/0.1
+
+* Expect 2xx or 3xx response.
+* Expect Content-Type of application/sparql-results+xml or application/sparql-results+json.
+* Expect *true* result.
+
+***
+
+*query_dataset_named_graphs_post* - POST query with protocol-specified named graphs
 
 		POST /sparql/?named-graph-uri=http%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata1.rdf&named-graph-uri=http%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata2.rdf HTTP/1.1
 		Host: www.example
@@ -522,12 +537,12 @@ followed by
 		Content-Length: XXX
 		
 		ASK {
-			GRAPH <http://example.org/protocol-update-dataset-test/> {
+			GRAPH <http://example.org/protocol-update-dataset-graphs-test/> {
 				<http://kasei.us/2009/09/sparql/data/data1.rdf> a <http://purl.org/dc/terms/BibliographicResource> .
 				<http://kasei.us/2009/09/sparql/data/data2.rdf> a <http://purl.org/dc/terms/BibliographicResource> .
 			}
 			FILTER NOT EXISTS {
-				GRAPH <http://example.org/protocol-update-dataset-test/> {
+				GRAPH <http://example.org/protocol-update-dataset-graphs-test/> {
 					<http://kasei.us/2009/09/sparql/data/data3.rdf> a <http://purl.org/dc/terms/BibliographicResource> .
 				}
 			}
@@ -556,7 +571,7 @@ followed by
 			GRAPH <http://kasei.us/2009/09/sparql/data/data3.rdf> { <http://kasei.us/2009/09/sparql/data/data3.rdf> a foaf:Document }
 		} ;
 		INSERT {
-			GRAPH <http://example.org/protocol-update-dataset-graphs-test/> {
+			GRAPH <http://example.org/protocol-update-dataset-named-graphs-test/> {
 				?s a dc:BibliographicResource
 			}
 		}
@@ -578,12 +593,12 @@ followed by
 		Content-Length: XXX
 		
 		ASK {
-			GRAPH <http://example.org/protocol-update-dataset-test/> {
+			GRAPH <http://example.org/protocol-update-dataset-named-graphs-test/> {
 				<http://kasei.us/2009/09/sparql/data/data1.rdf> a <http://purl.org/dc/terms/BibliographicResource> .
 				<http://kasei.us/2009/09/sparql/data/data2.rdf> a <http://purl.org/dc/terms/BibliographicResource> .
 			}
 			FILTER NOT EXISTS {
-				GRAPH <http://example.org/protocol-update-dataset-test/> {
+				GRAPH <http://example.org/protocol-update-dataset-named-graphs-test/> {
 					<http://kasei.us/2009/09/sparql/data/data3.rdf> a <http://purl.org/dc/terms/BibliographicResource> .
 				}
 			}
@@ -612,7 +627,7 @@ followed by
 			GRAPH <http://kasei.us/2009/09/sparql/data/data3.rdf> { <http://kasei.us/2009/09/sparql/data/data3.rdf> a foaf:Document }
 		} ;
 		INSERT {
-			GRAPH <http://example.org/protocol-update-dataset-graphs-test/> {
+			GRAPH <http://example.org/protocol-update-dataset-full-test/> {
 				?s <http://example.org/in> ?in
 			}
 		}
@@ -640,12 +655,12 @@ followed by
 		Content-Length: XXX
 		
 		ASK {
-			GRAPH <http://example.org/protocol-update-dataset-test/> {
+			GRAPH <http://example.org/protocol-update-dataset-full-test/> {
 				<http://kasei.us/2009/09/sparql/data/data1.rdf> <http://example.org/in> "default" .
 				<http://kasei.us/2009/09/sparql/data/data2.rdf> <http://example.org/in> <http://kasei.us/2009/09/sparql/data/data2.rdf> .
 			}
 			FILTER NOT EXISTS {
-				GRAPH <http://example.org/protocol-update-dataset-test/> {
+				GRAPH <http://example.org/protocol-update-dataset-full-test/> {
 					<http://kasei.us/2009/09/sparql/data/data3.rdf> ?p ?o
 				}
 			}
