@@ -7,6 +7,7 @@ use lib qw(lib);
 use Data::Dumper;
 use CGI qw(Accept);
 use JSON;
+use TryCatch;
 use Encode;
 use Data::Dumper;
 use HTTP::Request::Common;
@@ -14,7 +15,6 @@ use Scalar::Util qw(blessed);
 use LWP::UserAgent;
 use URI::Escape;
 use RDF::Trine qw(statement iri literal blank);
-use RDF::Trine::Error qw(:try);
 use RDF::Trine::Namespace qw(rdf dc xsd);
 use Plack;
 use Plack::Request;
@@ -245,21 +245,23 @@ sub validate {
 	if (1) {
 		### Positive tests
 		foreach my $t (POSITIVE_TESTS) {
-			my $name	= $t;
-			$name		=~ tr/-/_/;
-			
-			unless ($qurl) {
-				next if $name =~ /query/i;
-			}
-			unless ($uurl and $qurl) {
-				next if $name =~ /update/i;
-			}
-			
-# 			warn "Positive test: $t\n";
-			if (my $cv = __PACKAGE__->can("test_$name")) {
-				$cv->($ua, $qurl, $uurl, $opt, $res, $t);
-			} else {
-				warn "*** no implementation for test: $name\n";
+			try {
+				my $name	= $t;
+				$name		=~ tr/-/_/;
+				
+				unless ($qurl) {
+					next if $name =~ /query/i;
+				}
+				unless ($uurl and $qurl) {
+					next if $name =~ /update/i;
+				}
+				
+	# 			warn "Positive test: $t\n";
+				if (my $cv = __PACKAGE__->can("test_$name")) {
+					$cv->($ua, $qurl, $uurl, $opt, $res, $t);
+				} else {
+					warn "*** no implementation for test: $name\n";
+				}
 			}
 		}
 	}
@@ -269,26 +271,30 @@ sub validate {
 		my @tests	= bad_requests( $qurl, $uurl );
 		my %tests;
 		foreach my $t (@tests) {
-			my ($name, $req)	= @$t;
-			unless ($qurl) {
-				next if $name =~ /query/i;
+			try {
+				my ($name, $req)	= @$t;
+				unless ($qurl) {
+					next if $name =~ /query/i;
+				}
+				unless ($uurl and $qurl) {
+					next if $name =~ /update/i;
+				}
+				
+				$tests{ $name }	= $req;
 			}
-			unless ($uurl and $qurl) {
-				next if $name =~ /update/i;
-			}
-			
-			$tests{ $name }	= $req;
 		}
 		
 		foreach my $name (NEGATIVE_TESTS) {
-			my $req		= $tests{ $name };
-			warn "No request object for test $name" unless ($req);
-			my $resp	= $ua->request( $req );
-			my $code	= $resp->code;
-			if ($code =~ /^[45]\d\d$/) {
-				add_result( $res, $name, PASS );
-			} else {
-				add_result( $res, $name, FAIL, "Expected an error response code, but got: " . $resp->status_line, [$req, $resp] );
+			try {
+				my $req		= $tests{ $name };
+				warn "No request object for test $name" unless ($req);
+				my $resp	= $ua->request( $req );
+				my $code	= $resp->code;
+				if ($code =~ /^[45]\d\d$/) {
+					add_result( $res, $name, PASS );
+				} else {
+					add_result( $res, $name, FAIL, "Expected an error response code, but got: " . $resp->status_line, [$req, $resp] );
+				}
 			}
 		}
 	}
