@@ -343,7 +343,7 @@ sub results_response {
 	} elsif ($a->{type} =~ m#^((application/rdf[+]xml)|(text/(turtle|plain)))$#) {
 		my $mediatype	= $a->{type};
 		$resp->content_type("${mediatype}; charset=UTF-8");
-		my $map		= RDF::Trine::NamespaceMap->new( { rdf => $rdf, earl => $earl, prot => $ptests, dc => $dc } );
+		my $map		= RDF::Trine::NamespaceMap->new( { rdf => $rdf, earl => $earl, prot => $ptests, dc => $dc, doap => $doap } );
 		my $type;
 		if ($a->{type} =~ /turtle/) {
 			$type	= 'turtle';
