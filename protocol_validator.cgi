@@ -23,8 +23,9 @@ use Plack::Handler::CGI;
 
 our $VERSION	= 0.1;
 our $SHOW_ERROR_DETAIL	= 1;
-our $SUBMIT_URL	= 'http://localhost/protocol_validator.cgi';
+# our $SUBMIT_URL	= 'http://localhost/protocol_validator.cgi';
 # our $SUBMIT_URL	= 'http://kasei.us/2009/09/sparql/protocol_validator.cgi';
+our $SUBMIT_URL	= 'http://www.w3.org/2009/sparql/protocol_validator';
 
 use constant {
 	PASS	=> 'pass',
@@ -115,6 +116,7 @@ use constant DESCRIPTION => {
 };
 
 our $VALIDATOR_IRI	= 'http://www.w3.org/2009/sparql/protocol_validator#validator';
+my $doap			= RDF::Trine::Namespace->new( 'http://usefulinc.com/ns/doap#' );
 my $earl			= RDF::Trine::Namespace->new( 'http://www.w3.org/ns/earl#' );
 my $sd				= RDF::Trine::Namespace->new( 'http://www.w3.org/ns/sparql-service-description#' );
 my $ptests			= RDF::Trine::Namespace->new( 'http://www.w3.org/2009/sparql/docs/tests/data-sparql11/protocol/manifest#' );
@@ -126,7 +128,7 @@ binmode(\*STDOUT, ':utf8');
 # 	my $qurl	= shift || '';
 # 	my $uurl	= shift || '';
 # 	my $res		= validate($qurl, $uurl, 1);
-# 	results_response($qurl, $uurl, '#implementation#', $res, 1, $q);
+# 	results_response($qurl, $uurl, '#implementation#', '#name#', '#homepage#', $res, 1, $q);
 # 	exit;
 # }
 
@@ -137,16 +139,18 @@ my $app	= sub {
 	my $uurl	= $req->param('update_url');
 	my $opt		= $req->param('bp') ? 1 : 0;
 	my $sw		= $req->param('software');
+	my $name	= $req->param('softwarename');
+	my $homepage	= iri($req->param('softwareurl'));
 	
 	my $res;
 	if ($qurl or $uurl) {
 		$res	= validate($qurl, $uurl, $opt);
-		$res	= results_response($qurl, $uurl, $sw, $res, $opt, $req);
+		$res	= results_response($qurl, $uurl, $sw, $name, $homepage, $res, $opt, $req);
 	} else {
 		$res	= $req->new_response(200);
 		$res->content_type('text/html; charset=UTF-8');
 		my $head	= html_header();
-		my $form	= form('', '', '');
+		my $form	= form('', '', '','','');
 		my $foot	= html_footer();
 		$res->body( [$head, $form, $foot] );
 	}
@@ -307,6 +311,8 @@ sub results_response {
 	my $qurl	= shift;
 	my $uurl	= shift;
 	my $sw		= shift;
+	my $name	= shift;
+	my $homepage	= shift;
 	my $res		= shift;
 	my $opt		= shift;
 	my $req		= shift;
@@ -318,13 +324,14 @@ sub results_response {
 	push(@accept, { type => 'text/plain', value => Accept('text/plain') } );
 	@accept	= sort { $b->{value} <=> $a->{value} || $b->{type} eq 'html' } @accept;
 	my $a	= $accept[0];
-	my $tested	= ($sw) ? iri($sw) : iri($qurl);
 	
+	my $tested	= ($sw) ? iri($sw) : iri($qurl);
 	
 	my $resp	= Plack::Response->new(200);
 	if ($a->{type} eq 'text/html') {
 		$resp->content_type('text/html; charset=UTF-8');
-		$resp->body(html_results($qurl, $uurl, $tested->uri_value, $res, $opt));
+		my $url	= $homepage ? $homepage->uri_value : '';
+		$resp->body(html_results($qurl, $uurl, $tested->uri_value, $name, $url, $res, $opt));
 	} elsif ($a->{type} eq 'application/json') {
 		my $data	= { endpoint => $qurl, results => $res };
 		if (length($tested)) {
@@ -346,7 +353,7 @@ sub results_response {
 			$type	= 'ntriples';
 		}
 		my $s		= RDF::Trine::Serializer->new( $type, namespaces => $map );
-		$resp->body(rdf_results($qurl, $uurl, $tested, $res, $s, $opt));
+		$resp->body(rdf_results($qurl, $uurl, $tested, $name, $homepage, $res, $s, $opt));
 	} else {
 		$resp->content_type("text/plain; charset=UTF-8");
 		$resp->body("should emit $a->{type}");
@@ -358,6 +365,8 @@ sub results_model {
 	my $qurl	= shift;
 	my $uurl	= shift;
 	my $tested	= shift;
+	my $name	= shift;
+	my $homepage	= shift;
 	my $res		= shift;
 	my $s		= shift;
 	my $opt		= shift;
@@ -371,6 +380,10 @@ sub results_model {
 	if ($opt) {
 		push(@tests, OPTIONAL_TESTS);
 	}
+	
+	$model->add_statement( statement($tested, $rdf->type, $doap->Project) );
+	$model->add_statement( statement($tested, $doap->name, literal($name)) );
+	$model->add_statement( statement($tested, $doap->homepage, $homepage) );
 	
 	foreach my $test (@tests) {
 		unless ($qurl) {
@@ -410,10 +423,12 @@ sub rdf_results {
 	my $qurl	= shift;
 	my $uurl	= shift;
 	my $tested	= shift;
+	my $name	= shift;
+	my $homepage	= shift;
 	my $res		= shift;
 	my $s		= shift;
 	my $opt		= shift;
-	my $model	= results_model($qurl, $uurl, $tested, $res, $s, $opt);
+	my $model	= results_model($qurl, $uurl, $tested, $name, $homepage, $res, $s, $opt);
 	return $s->serialize_model_to_string( $model );
 }
 
@@ -421,10 +436,12 @@ sub html_results {
 	my $qurl	= shift;
 	my $uurl	= shift;
 	my $tested	= shift;
-	my $res	= shift;
+	my $name	= shift;
+	my $homepage	= shift;
+	my $res		= shift;
 	my $opt		= shift;
 	my $head	= html_header();
-	my $form	= form($qurl, $uurl, $tested);
+	my $form	= form($qurl, $uurl, $tested, $name, $homepage);
 	
 	my $body	= $head . $form;
 	
@@ -485,14 +502,16 @@ sub html_results {
 		}
 	}
 	
+	my $impl	= qq[<a href="${homepage}">${name}</a>];
+	
 	if ($total == $passed) {
-		$body	.= qq[<h1 id="summary" class="pass">All tests passed</h1>\n];
+		$body	.= qq[<h1 id="summary" class="pass">All tests passed for ${impl}</h1>\n];
 	} elsif ($req_total == $req_failed) {
-		$body	.= qq[<h1 id="summary" class="fail">All required tests failed</h1>\n];
+		$body	.= qq[<h1 id="summary" class="fail">All required tests failed for ${impl}</h1>\n];
 	} elsif ($req_total == $req_passed) {
-		$body	.= qq[<h1 id="summary" class="warn">All required tests passed, but some tests failed</h1>\n];
+		$body	.= qq[<h1 id="summary" class="warn">All required tests passed, but some tests failed for ${impl}</h1>\n];
 	} else {
-		$body	.= qq[<h1 id="summary" class="warn">Some tests failed</h1>\n];
+		$body	.= qq[<h1 id="summary" class="warn">Some tests failed for ${impl}</h1>\n];
 	}
 	
 	$body	.= <<"END";
@@ -617,11 +636,15 @@ sub form {
 	my $qurl		= shift;
 	my $uurl		= shift;
 	my $software	= shift;
+	my $name		= shift;
+	my $homepage	= shift;
 	return <<"END";
 	<form action="$SUBMIT_URL" method="get"> <!-- @@ change to final W3C URI -->
 		SPARQL Query Endpoint: <input name="query_url" id="query_url" type="text" size="40" value="$qurl" /><br/>
 		SPARQL Update Endpoint: <input name="update_url" id="update_url" type="text" size="40" value="$uurl" /><br/>
 		Implementation software IRI: <input name="software" id="software" type="text" size="40" value="$software" /><br/>
+		Implementation Name: <input name="softwarename" id="softwarename" type="text" size="40" value="$name" /><br/>
+		Implementation Homepage: <input name="softwareurl" id="softwareurl" type="text" size="40" value="$homepage" /><br/>
 <!--		<input name="bp" id="bp" type="checkbox" value="1" /> Run best-practices tests<br/> -->
 		<input name="submit" id="submit" type="submit" value="Submit" />
 	</form>
