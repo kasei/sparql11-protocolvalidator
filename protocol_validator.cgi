@@ -115,6 +115,7 @@ use constant DESCRIPTION => {
 	"bad_update_dataset_conflict"	=> "invoke update with both using-graph-uri/using-named-graph-uri parameter and USING/WITH clause",
 };
 
+# $XML::SAX::ParserPackage = "XML::SAX::Expat";
 our $VALIDATOR_IRI	= 'http://www.w3.org/2009/sparql/protocol_validator#validator';
 my $doap			= RDF::Trine::Namespace->new( 'http://usefulinc.com/ns/doap#' );
 my $earl			= RDF::Trine::Namespace->new( 'http://www.w3.org/ns/earl#' );
@@ -269,6 +270,8 @@ sub validate {
 				} else {
 					warn "*** no implementation for test: $name\n";
 				}
+			} catch ($e) {
+				warn "faield test $t with error: " . Dumper($e);
 			}
 		}
 	}
@@ -801,9 +804,9 @@ sub _test_result_for_rdf_type {
 sub _test_for_media_type {
 	my $got		= shift;
 	my $expect	= shift;
-	warn "testing media type $got...\n";
+# 	warn "testing media type $got...\n";
 	my $re		= quotemeta($expect);
-	return ($got =~ m{^${re}(?:\s*;\s*charset=.*)?$}	);
+	return ($got =~ m{^${re}(?:\s*;\s*charset=.*)?$});
 }
 
 sub __________TESTS__________ {}
