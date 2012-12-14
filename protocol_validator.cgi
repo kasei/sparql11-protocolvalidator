@@ -759,9 +759,9 @@ sub _test_boolean_result_for_true {
 sub _test_result_for_select_query {
 	my ($req, $resp, $res, $name)	= @_;
 	my $type	= $resp->header('Content-Type');
-	if ($type =~ m#application/sparql-results[+]xml#) {
+	if (_test_for_media_type($type, 'application/sparql-results+xml')) {
 		add_result( $res, $name, PASS );
-	} elsif ($type =~ m#application/sparql-results[+]json#) {
+	} elsif (_test_for_media_type($type, 'application/sparql-results+json')) {
 		add_result( $res, $name, PASS );
 	} elsif ($type =~ m#text/tab-separated-values#) {
 		add_result( $res, $name, PASS );
@@ -776,9 +776,9 @@ sub _test_result_for_ask_query {
 	my ($req, $resp, $res, $name)	= @_;
 	Carp::confess unless (blessed($resp) and $resp->can('header'));
 	my $type	= $resp->header('Content-Type');
-	if ($type =~ m#application/sparql-results[+]xml#) {
+	if (_test_for_media_type($type, 'application/sparql-results+xml')) {
 		add_result( $res, $name, PASS );
-	} elsif ($type =~ m#application/sparql-results[+]json#) {
+	} elsif (_test_for_media_type($type, 'application/sparql-results+json')) {
 		add_result( $res, $name, PASS );
 	} else {
 		add_result( $res, $name, FAIL, "Expected SPARQL Results format appropriate for ASK form, but got $type", [$req, $resp] );
@@ -796,6 +796,14 @@ sub _test_result_for_rdf_type {
 	} else {
 		add_result( $res, $name, FAIL, "Expected RDF Results format, but got $type", [$req, $resp] );
 	}
+}
+
+sub _test_for_media_type {
+	my $got		= shift;
+	my $expect	= shift;
+	warn "testing media type $got...\n";
+	my $re		= quotemeta($expect);
+	return ($got =~ m{^${re}(?:\s*;\s*charset=.*)?$}	);
 }
 
 sub __________TESTS__________ {}
@@ -826,7 +834,7 @@ sub bad_requests {
 		}
 	
 		{
-			#  bad-query-missing-form-type - invoke query operation with url-encoded body, but without application/x-www-url-form-urlencoded media type
+			#  bad-query-missing-form-type - invoke query operation with url-encoded body, but without application/x-www-form-urlencoded media type
 			my $req	= POST($qurl, ['query' => 'ASK {}', 'default-graph-uri' => 'http://kasei.us/2009/09/sparql/data/data0.rdf']);
 			$req->remove_header('Content-Type');
 			push(@reqs, [ 'bad_query_missing_form_type', $req]);
@@ -872,7 +880,7 @@ sub bad_requests {
 		}
 	
 		{
-			#  bad-update-missing-form-type - invoke update operation with url-encoded body, but without application/x-www-url-form-urlencoded media type
+			#  bad-update-missing-form-type - invoke update operation with url-encoded body, but without application/x-www-form-urlencoded media type
 			my $req	= POST($uurl, [ 'update' => 'CLEAR NAMED', 'using-graph-uri' => 'http://kasei.us/2009/09/sparql/data/data0.rdf' ]);
 			$req->remove_header('Content-Type');
 			push(@reqs, [ 'bad_update_missing_form_type', $req]);
@@ -921,7 +929,7 @@ sub test_query_get {
 	my $req		= GET("${qurl}?query=ASK%20%7B%7D&default-graph-uri=http%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata0.rdf");
 	if (my $resp = _positive_test_request($ua, $res, $name, $req)) {
 		my $type	= $resp->header('Content-Type');
-		if ($type eq 'application/sparql-results+xml' or $type eq 'application/sparql-results+json') {
+		if (_test_for_media_type($type, 'application/sparql-results+xml') or _test_for_media_type($type, 'application/sparql-results+json')) {
 			_test_boolean_result_for_true( $req, $resp, $res, $name );
 
 		} else {
@@ -935,7 +943,7 @@ sub test_query_post_form {
 	my $req		= POST($qurl, ['query' => 'ASK {}', 'default-graph-uri' => 'http://kasei.us/2009/09/sparql/data/data0.rdf']);
 	if (my $resp = _positive_test_request($ua, $res, $name, $req)) {
 		my $type	= $resp->header('Content-Type');
-		if ($type eq 'application/sparql-results+xml' or $type eq 'application/sparql-results+json') {
+		if (_test_for_media_type($type, 'application/sparql-results+xml') or _test_for_media_type($type, 'application/sparql-results+json')) {
 			_test_boolean_result_for_true( $req, $resp, $res, $name );
 		} else {
 			add_result( $res, $name, FAIL, "Expected SPARQL XML or JSON results, but got: " . $type, [$req, $resp] );
@@ -948,7 +956,7 @@ sub test_query_post_direct {
 	my $req		= POST($qurl, ['default-graph-uri' => 'http://kasei.us/2009/09/sparql/data/data0.rdf'], 'Content-Type' => 'application/sparql-query', Content => 'ASK {}');
 	if (my $resp = _positive_test_request($ua, $res, $name, $req)) {
 		my $type	= $resp->header('Content-Type');
-		if ($type eq 'application/sparql-results+xml' or $type eq 'application/sparql-results+json') {
+		if (_test_for_media_type($type, 'application/sparql-results+xml') or _test_for_media_type($type, 'application/sparql-results+json')) {
 			_test_boolean_result_for_true( $req, $resp, $res, $name );
 		} else {
 			add_result( $res, $name, FAIL, "Expected SPARQL XML or JSON results, but got: " . $type, [$req, $resp] );
@@ -992,7 +1000,7 @@ sub test_query_dataset_default_graph {
 				]);
 	if (my $resp = _positive_test_request($ua, $res, $name, $req)) {
 		my $type	= $resp->header('Content-Type');
-		if ($type eq 'application/sparql-results+xml' or $type eq 'application/sparql-results+json') {
+		if (_test_for_media_type($type, 'application/sparql-results+xml') or _test_for_media_type($type, 'application/sparql-results+json')) {
 			_test_boolean_result_for_true( $req, $resp, $res, $name );
 		} else {
 			add_result( $res, $name, FAIL, "Expected SPARQL XML or JSON results, but got: " . $type, [$req, $resp] );
@@ -1010,7 +1018,7 @@ sub test_query_dataset_default_graphs_post {
 				]);
 	if (my $resp = _positive_test_request($ua, $res, $name, $req)) {
 		my $type	= $resp->header('Content-Type');
-		if ($type eq 'application/sparql-results+xml' or $type eq 'application/sparql-results+json') {
+		if (_test_for_media_type($type, 'application/sparql-results+xml') or _test_for_media_type($type, 'application/sparql-results+json')) {
 			_test_boolean_result_for_true( $req, $resp, $res, $name );
 		} else {
 			add_result( $res, $name, FAIL, "Expected SPARQL XML or JSON results, but got: " . $type, [$req, $resp] );
@@ -1024,7 +1032,7 @@ sub test_query_dataset_default_graphs_get {
 	my $req		= GET("${qurl}?query=ASK%20%7B%20%3Chttp%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata1.rdf%3E%20a%20%3Ftype%20.%20%3Chttp%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata2.rdf%3E%20a%20%3Ftype%20.%20%7D&default-graph-uri=http%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata1.rdf&default-graph-uri=http%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata2.rdf");
 	if (my $resp = _positive_test_request($ua, $res, $name, $req)) {
 		my $type	= $resp->header('Content-Type');
-		if ($type eq 'application/sparql-results+xml' or $type eq 'application/sparql-results+json') {
+		if (_test_for_media_type($type, 'application/sparql-results+xml') or _test_for_media_type($type, 'application/sparql-results+json')) {
 			_test_boolean_result_for_true( $req, $resp, $res, $name );
 		} else {
 			add_result( $res, $name, FAIL, "Expected SPARQL XML or JSON results, but got: " . $type, [$req, $resp] );
@@ -1042,7 +1050,7 @@ sub test_query_dataset_named_graphs_post {
 				]);
 	if (my $resp = _positive_test_request($ua, $res, $name, $req)) {
 		my $type	= $resp->header('Content-Type');
-		if ($type eq 'application/sparql-results+xml' or $type eq 'application/sparql-results+json') {
+		if (_test_for_media_type($type, 'application/sparql-results+xml') or _test_for_media_type($type, 'application/sparql-results+json')) {
 			_test_boolean_result_for_true( $req, $resp, $res, $name );
 		} else {
 			add_result( $res, $name, FAIL, "Expected SPARQL XML or JSON results, but got: " . $type, [$req, $resp] );
@@ -1056,7 +1064,7 @@ sub test_query_dataset_named_graphs_get {
 	my $req		= GET("${qurl}?query=ASK%20%7B%20GRAPH%20%3Fg1%20%7B%20%3Chttp%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata1.rdf%3E%20a%20%3Ftype%20%7D%20GRAPH%20%3Fg2%20%7B%20%3Chttp%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata2.rdf%3E%20a%20%3Ftype%20%7D%20%7D&named-graph-uri=http%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata1.rdf&named-graph-uri=http%3A%2F%2Fkasei.us%2F2009%2F09%2Fsparql%2Fdata%2Fdata2.rdf");
 	if (my $resp = _positive_test_request($ua, $res, $name, $req)) {
 		my $type	= $resp->header('Content-Type');
-		if ($type eq 'application/sparql-results+xml' or $type eq 'application/sparql-results+json') {
+		if (_test_for_media_type($type, 'application/sparql-results+xml') or _test_for_media_type($type, 'application/sparql-results+json')) {
 			_test_boolean_result_for_true( $req, $resp, $res, $name );
 		} else {
 			add_result( $res, $name, FAIL, "Expected SPARQL XML or JSON results, but got: " . $type, [$req, $resp] );
@@ -1082,7 +1090,7 @@ END
 				]);
 	if (my $resp = _positive_test_request($ua, $res, $name, $req)) {
 		my $type	= $resp->header('Content-Type');
-		if ($type eq 'application/sparql-results+xml' or $type eq 'application/sparql-results+json') {
+		if (_test_for_media_type($type, 'application/sparql-results+xml') or _test_for_media_type($type, 'application/sparql-results+json')) {
 			_test_boolean_result_for_true( $req, $resp, $res, $name );
 		} else {
 			add_result( $res, $name, FAIL, "Expected SPARQL XML or JSON results, but got: " . $type, [$req, $resp] );
@@ -1100,7 +1108,7 @@ sub test_query_multiple_dataset {
 				]);
 	if (my $resp = _positive_test_request($ua, $res, $name, $req)) {
 		my $type	= $resp->header('Content-Type');
-		if ($type eq 'application/sparql-results+xml' or $type eq 'application/sparql-results+json') {
+		if (_test_for_media_type($type, 'application/sparql-results+xml') or _test_for_media_type($type, 'application/sparql-results+json')) {
 			_test_boolean_result_for_true( $req, $resp, $res, $name );
 		} else {
 			add_result( $res, $name, FAIL, "Expected SPARQL XML or JSON results, but got: " . $type, [$req, $resp] );
@@ -1243,7 +1251,7 @@ END
 		if (my $resp = _positive_test_request($ua, $res, $name, $req)) {
 			my $xmlres	= $resp->decoded_content;
 			my $type	= $resp->header('Content-Type');
-			if ($type eq 'application/sparql-results+xml') {
+			if (_test_for_media_type($type, 'application/sparql-results+xml')) {
 				_test_boolean_result_for_true( $req, $resp, $res, $name );
 			} else {
 				add_result( $res, $name, FAIL, "Expected SPARQL XML or JSON results, but got: " . $type, [$req, $resp] );
@@ -1297,7 +1305,7 @@ END
 		if (my $resp = _positive_test_request($ua, $res, $name, $req)) {
 			my $xmlres	= $resp->decoded_content;
 			my $type	= $resp->header('Content-Type');
-			if ($type eq 'application/sparql-results+xml') {
+			if (_test_for_media_type($type, 'application/sparql-results+xml')) {
 				_test_boolean_result_for_true( $req, $resp, $res, $name );
 			} else {
 				add_result( $res, $name, FAIL, "Expected SPARQL XML or JSON results, but got: " . $type, [$req, $resp] );
@@ -1353,7 +1361,7 @@ END
 		if (my $resp = _positive_test_request($ua, $res, $name, $req)) {
 			my $xmlres	= $resp->decoded_content;
 			my $type	= $resp->header('Content-Type');
-			if ($type eq 'application/sparql-results+xml') {
+			if (_test_for_media_type($type, 'application/sparql-results+xml')) {
 				_test_boolean_result_for_true( $req, $resp, $res, $name );
 			} else {
 				add_result( $res, $name, FAIL, "Expected SPARQL XML or JSON results, but got: " . $type, [$req, $resp] );
@@ -1415,7 +1423,7 @@ END
 		if (my $resp = _positive_test_request($ua, $res, $name, $req)) {
 			my $xmlres	= $resp->decoded_content;
 			my $type	= $resp->header('Content-Type');
-			if ($type eq 'application/sparql-results+xml') {
+			if (_test_for_media_type($type, 'application/sparql-results+xml')) {
 				_test_boolean_result_for_true( $req, $resp, $res, $name );
 			} else {
 				add_result( $res, $name, FAIL, "Expected SPARQL XML or JSON results, but got: " . $type, [$req, $resp] );
