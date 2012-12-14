@@ -1180,7 +1180,7 @@ sub test_update_base_uri {
 	my ($ua, $qurl, $uurl, $opt, $res, $name)	= @_;
 	{
 		my $resp	= $ua->request( POST($uurl, [
-						'update' => 'CLEAR GRAPH <http://example.org/protocol-base-test/> ; INSERT DATA { GRAPH <http://example.org/protocol-base-test/> { <http://example.org/s> <http://example.org/p> <test> } }',
+						'update' => 'CLEAR SILENT GRAPH <http://example.org/protocol-base-test/> ; INSERT DATA { GRAPH <http://example.org/protocol-base-test/> { <http://example.org/s> <http://example.org/p> <test> } }',
 					]) );
 	}
 	my $req	= POST($qurl, [
