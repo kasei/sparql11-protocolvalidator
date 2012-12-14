@@ -140,7 +140,10 @@ my $app	= sub {
 	my $opt		= $req->param('bp') ? 1 : 0;
 	my $sw		= $req->param('software');
 	my $name	= $req->param('softwarename');
-	my $homepage	= iri($req->param('softwareurl'));
+	my $homepage	= $req->param('softwareurl');
+	if ($homepage) {
+		$homepage	= iri($homepage);
+	}
 	
 	my $res;
 	if ($qurl or $uurl) {
