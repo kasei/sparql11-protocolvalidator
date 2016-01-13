@@ -15,6 +15,8 @@ from [CPAN](https://metacpan.org/):
 * [LWP::UserAgent](https://metacpan.org/release/libwww-perl)
 * [RDF::Trine](https://metacpan.org/release/RDF-Trine)
 * [URI::Escape](https://metacpan.org/release/URI)
+* [TryCatch](https://metacpan.org/release/TryCatch)
+* [Plack](https://metacpan.org/release/Plack)
 
 Setup
 -----
